@@ -47,27 +47,23 @@ export default function PracticePage({ scenario, onCancel, onComplete }: Practic
           ← Scenarios
         </button>
         <div>
-          <p className="eyebrow">Fictional simulation</p>
+          <p className="eyebrow">Training simulation</p>
           <h1>{scenario.title}</h1>
-          <p>{scenario.description}</p>
         </div>
       </header>
 
       <section className="call-panel">
         <CallStatus status={call.status} isSpeaking={call.isSpeaking} />
         <p className="privacy-reminder">Use fictional information only. You can hang up at any time.</p>
-        <CallControls
-          status={call.status}
-          isMuted={call.isMuted}
-          isFinishing={isFinishing}
-          onStart={startCall}
-          onToggleMute={() => call.setMuted(!call.isMuted)}
-          onHangUp={finishCall}
-        />
+
         {(pageError || call.error) && <p className="error-message">{pageError ?? call.error}</p>}
       </section>
 
       <Transcript turns={call.transcript} />
+      <div className="bottom-call-controls">
+        <CallControls status={call.status} isMuted={call.isMuted} isFinishing={isFinishing}
+          onStart={startCall} onToggleMute={() => call.setMuted(!call.isMuted)} onHangUp={finishCall} />
+      </div>
     </main>
   );
 }

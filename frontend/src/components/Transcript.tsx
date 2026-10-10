@@ -13,6 +13,7 @@ export default function Transcript({ turns }: TranscriptProps) {
       ) : (
         turns.map((turn, index) => (
           <div className={`transcript-turn transcript-turn--${turn.role}`} key={`${index}-${turn.text}`}>
+            <span className="speaker-avatar" aria-hidden="true">♟</span>
             <strong>{turn.role === "agent" ? "Caller" : "You"}</strong>
             <p>{turn.text}</p>
           </div>
