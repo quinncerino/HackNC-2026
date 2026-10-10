@@ -49,9 +49,8 @@ export default function PracticePage({ scenario, onCancel, onComplete }: Practic
           ← Scenarios
         </button>
         <div>
-          <p className="eyebrow">Fictional simulation</p>
+          <p className="eyebrow">Training simulation</p>
           <h1>{scenario.title}</h1>
-          <p>{scenario.description}</p>
         </div>
       </header>
 

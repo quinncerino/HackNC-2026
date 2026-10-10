@@ -1,0 +1,15 @@
+{
+  "id": "family_emergency",
+  "title": "Family Emergency",
+  "description": "Practice handling a caller who claims a relative is in trouble and demands immediate money without allowing verification.",
+  "difficulty": "Intermediate",
+  "agentEnvVar": "ELEVENLABS_AGENT_ID_FAMILY_EMERGENCY",
+  "tactics": ["Emotional pressure", "Secrecy", "Refusal to allow verification"],
+  "saferResponse": "I’ll contact my relative or another family member before doing anything.",
+  "agentVariables": {
+    "scenario_name": "Family Emergency",
+    "caller_identity": "a fictional caller claiming to be helping a relative",
+    "fictional_problem": "a family member is allegedly in trouble and needs urgent financial help",
+    "requested_action": "send money immediately and keep it secret"
+  }
+}

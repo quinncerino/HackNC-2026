@@ -1,0 +1,15 @@
+{
+  "id": "package_delivery_problem",
+  "title": "Package Delivery Problem",
+  "description": "Practice handling a caller who claims a package is on hold and directs you to a suspicious link to enter payment information.",
+  "difficulty": "Intermediate",
+  "agentEnvVar": "ELEVENLABS_AGENT_ID_PACKAGE_DELIVERY",
+  "tactics": ["Unexpected link", "Small fee used to obtain payment details", "Pressure"],
+  "saferResponse": "I’ll check the delivery company’s official website myself.",
+  "agentVariables": {
+    "scenario_name": "Package Delivery Problem",
+    "caller_identity": "a fictional delivery support representative",
+    "fictional_problem": "a package is allegedly on hold and requires a payment to be released",
+    "requested_action": "open the suspicious link and enter payment information"
+  }
+}

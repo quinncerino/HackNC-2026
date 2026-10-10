@@ -13,12 +13,12 @@ export default function ResultsPage({ scenario, debrief, onRestart }: ResultsPag
       <header className="page-header">
         <div>
           <p className="eyebrow">Practice complete</p>
-          <h1>{scenario.title} debrief</h1>
-          <p>Review what happened, then practice the safer response aloud.</p>
+          <h1>Your call, explained.</h1>
+          <p>{scenario.title} · Review what happened and practice a safer response.</p>
         </div>
-        <button type="button" onClick={onRestart}>Choose another scenario</button>
       </header>
       <DebriefPanel debrief={debrief} />
+      <div className="start-row"><button type="button" onClick={onRestart}>← Back to scenarios</button></div>
     </main>
   );
 }

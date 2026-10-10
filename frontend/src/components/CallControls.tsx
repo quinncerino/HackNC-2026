@@ -25,11 +25,11 @@ export default function CallControls({
 
   return (
     <div className="call-controls">
-      <button type="button" onClick={onToggleMute} disabled={status !== "connected"}>
+      <button type="button" aria-pressed={isMuted} onClick={onToggleMute} disabled={status !== "connected"}>
         {isMuted ? "Unmute" : "Mute"}
       </button>
       <button type="button" className="danger-action" onClick={onHangUp} disabled={isFinishing}>
-        {isFinishing ? "Preparing debrief…" : "Hang up"}
+        {isFinishing ? "Preparing debrief…" : "End call"}
       </button>
     </div>
   );
