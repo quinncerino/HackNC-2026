@@ -1,3 +1,14 @@
 {
-  "_comment": "Defines the fictional bank-alert scam scenario, its tactics, safe outcomes, and evaluation rubric."
+  "id": "bank_alert",
+  "title": "Bank Alert",
+  "description": "Practice handling a fictional caller claiming that your bank account is at risk.",
+  "difficulty": "Intermediate",
+  "tactics": ["Fear", "Urgency", "Claimed security procedure", "Discouraging verification"],
+  "saferResponse": "I will hang up and contact my bank using the number printed on my card.",
+  "agentVariables": {
+    "scenario_name": "Bank Alert",
+    "caller_identity": "the security team at fictional Harborline Bank",
+    "fictional_problem": "a suspicious transfer is supposedly pending",
+    "requested_action": "share the fictional practice code 000000"
+  }
 }
