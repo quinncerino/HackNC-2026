@@ -8,11 +8,16 @@ from elevenlabs.conversational_ai.conversation import Conversation
 from elevenlabs.conversational_ai.default_audio_interface import DefaultAudioInterface
 load_dotenv()
 
-agent_id = os.getenv("AGENT_ID")
+agent_id =""
 api_key = os.getenv("ELEVENLABS_API_KEY")
 
 elevenlabs = ElevenLabs(api_key=api_key)
+num=input("Enter agent number:")
 
+if int(num)==1:
+    agent_id=os.getenv("AGENT_ID1")
+elif int(num)==2:
+    agent_id=os.getenv("AGENT_ID2")
 
 conversation = Conversation(
     # API client and agent ID.
