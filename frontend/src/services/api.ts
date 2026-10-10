@@ -1,4 +1,11 @@
-import type { Debrief, Scenario, SessionResponse, TranscriptTurn } from "../types";
+import type {
+  Debrief,
+  IMessageSession,
+  IMessageStartResponse,
+  Scenario,
+  SessionResponse,
+  TranscriptTurn,
+} from "../types";
 
 async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -35,4 +42,20 @@ export function createDebrief(
     method: "POST",
     body: JSON.stringify({ scenarioId, transcript }),
   });
+}
+
+export function startIMessageSession(
+  scenarioId: string,
+  firstName: string,
+  phoneNumber: string,
+  consent: boolean,
+): Promise<IMessageStartResponse> {
+  return apiRequest<IMessageStartResponse>("/api/imessage/start", {
+    method: "POST",
+    body: JSON.stringify({ scenarioId, firstName, phoneNumber, consent }),
+  });
+}
+
+export function getIMessageSession(sessionId: string): Promise<IMessageSession> {
+  return apiRequest<IMessageSession>(`/api/imessage/session/${sessionId}`);
 }
