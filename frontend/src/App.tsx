@@ -45,7 +45,7 @@ export default function App() {
     );
   }
 
-  else { content = <HomePage onChooseScenario={chooseScenario} />; }
+  else { content = <HomePage onChooseScenario={chooseScenario} onHowItWorks={() => setShowHelp(true)} />; }
   return (
     <div className="desktop-window">
       <header className="desktop-titlebar">

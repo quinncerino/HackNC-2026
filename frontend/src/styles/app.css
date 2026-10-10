@@ -1069,3 +1069,114 @@ body, button, input, textarea, select, summary {
     font-size: 14px;
   }
 }
+
+/* Compact scenario cards, with room for longer scenario names. */
+.scenario-grid {
+  gap: 18px;
+}
+
+.scenario-card {
+  min-height: 250px;
+  padding: 20px;
+}
+
+.scenario-card--selected {
+  padding: 18px;
+}
+
+.scenario-icon {
+  width: 70px;
+  height: 62px;
+  margin-bottom: 10px;
+}
+
+.scenario-card h2 {
+  font-size: 25px;
+  margin: 4px 0 12px;
+}
+
+.scenario-card p {
+  font-size: 18px;
+  margin-bottom: 14px;
+  max-width: none;
+}
+
+.scenario-duration {
+  gap: 10px;
+  font-size: 17px;
+}
+
+.scenario-card .selection-box {
+  width: 26px;
+  height: 26px;
+  line-height: 22px;
+  font-size: 22px;
+  top: 18px;
+  right: 18px;
+}
+
+.scenario-card .clock-icon {
+  width: 25px;
+  height: 25px;
+}
+
+@media (max-width: 900px) {
+  .scenario-card {
+    min-height: 220px;
+  }
+}
+
+/* Keep the clock hands centered at the compact card size. */
+.scenario-card .clock-icon {
+  flex: 0 0 25px;
+}
+
+.scenario-card .clock-icon::before {
+  left: calc(50% - 1px);
+  top: calc(50% - 7px);
+  width: 2px;
+  height: 7px;
+}
+
+.scenario-card .clock-icon::after {
+  left: calc(50% - 1px);
+  top: calc(50% - 1px);
+  width: 7px;
+  height: 2px;
+}
+
+/* Center the matching green information boxes together. */
+.training-info-row {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 18px auto 28px;
+}
+
+.training-info-row .notice {
+  margin: 0;
+  width: auto;
+  min-height: 58px;
+  padding: 12px 22px;
+  border: 1px solid #11794d;
+  border-radius: 5px;
+  background: linear-gradient(#effff4, #d0ffdc);
+  color: var(--navy);
+  box-shadow: none;
+  font-size: 23px;
+  line-height: 1.4;
+}
+
+.training-help:focus-visible {
+  outline: 3px dotted var(--navy);
+  outline-offset: 4px;
+}
+
+@media (max-width: 900px) {
+  .training-info-row .notice {
+    font-size: 18px;
+    padding: 12px 16px;
+  }
+}

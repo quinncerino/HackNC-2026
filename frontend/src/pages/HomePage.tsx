@@ -6,9 +6,10 @@ import type { Scenario } from "../types";
 
 type HomePageProps = {
   onChooseScenario: (scenario: Scenario) => void;
+  onHowItWorks: () => void;
 };
 
-export default function HomePage({ onChooseScenario }: HomePageProps) {
+export default function HomePage({ onChooseScenario, onHowItWorks }: HomePageProps) {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -29,9 +30,20 @@ export default function HomePage({ onChooseScenario }: HomePageProps) {
         </p>
       </header>
 
-      <section className="notice" aria-label="Safety notice">
-        <span aria-hidden="true">✓</span> <strong>Safe training simulation</strong>
-      </section>
+      <div className="training-info-row">
+        <section className="notice" aria-label="Safety notice">
+          <span aria-hidden="true">✓</span>
+          <strong>Safe training simulation</strong>
+        </section>
+        <button
+          type="button"
+          className="notice training-help"
+          onClick={onHowItWorks}
+        >
+          <span aria-hidden="true">?</span>
+          <strong>How It Works</strong>
+        </button>
+      </div>
 
       {error && <p className="error-message">Could not load scenarios: {error}</p>}
       {!error && scenarios.length === 0 && <p>Loading scenarios…</p>}
