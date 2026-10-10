@@ -25,10 +25,15 @@ class IMessageFlowTest(unittest.TestCase):
     def tearDown(self):
         self.temporary_directory.cleanup()
 
+    @patch("routes.imessage.get_imessage_chat_reply")
     @patch("routes.imessage.requests.post")
-    def test_consent_start_conversation_reveal_and_memory(self, post: Mock):
+    def test_consent_start_conversation_reveal_and_memory(self, post: Mock, chat_reply: Mock):
         post.return_value.raise_for_status.return_value = None
         post.return_value.json.return_value = {"optInPhoneNumber": "+19195550999"}
+        chat_reply.side_effect = [
+            ("SIMULATION START — Campus IT Helpdesk.", "elevenlabs-test-conversation"),
+            ("Please verify the request through the official channel.", "elevenlabs-test-conversation"),
+        ]
 
         no_consent = self.client.post(
             "/api/imessage/start",
@@ -87,6 +92,9 @@ class IMessageFlowTest(unittest.TestCase):
 
         status = self.client.get(f"/api/imessage/session/{session_id}")
         self.assertEqual(status.get_json()["status"], "complete")
+        self.assertEqual(
+            status.get_json()["elevenlabsConversationId"], "elevenlabs-test-conversation"
+        )
         self.assertIn(
             "Chose to verify through an independent channel",
             status.get_json()["debrief"]["protectiveActions"],

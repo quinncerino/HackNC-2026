@@ -59,6 +59,11 @@ def _connect() -> sqlite3.Connection:
         );
         """
     )
+    columns = {row["name"] for row in connection.execute("PRAGMA table_info(imessage_sessions)")}
+    if "elevenlabs_conversation_id" not in columns:
+        connection.execute(
+            "ALTER TABLE imessage_sessions ADD COLUMN elevenlabs_conversation_id TEXT"
+        )
     return connection
 
 
@@ -140,6 +145,18 @@ def set_space(session_id: str, space_id: str | None) -> None:
         connection.execute(
             "UPDATE imessage_sessions SET space_id = ?, updated_at = ? WHERE id = ?",
             (space_id, _now(), session_id),
+        )
+
+
+def set_elevenlabs_conversation(session_id: str, conversation_id: str) -> None:
+    with _database() as connection:
+        connection.execute(
+            """
+            UPDATE imessage_sessions
+            SET elevenlabs_conversation_id = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (conversation_id, _now(), session_id),
         )
 
 
@@ -235,4 +252,5 @@ def deserialize_session(session: dict) -> dict:
         "stage": session["stage"],
         "transcript": json.loads(session["transcript_json"] or "[]"),
         "debrief": json.loads(session["debrief_json"]) if session["debrief_json"] else None,
+        "elevenlabsConversationId": session.get("elevenlabs_conversation_id"),
     }

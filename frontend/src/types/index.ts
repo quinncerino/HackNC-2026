@@ -51,4 +51,5 @@ export type IMessageSession = {
   stage: string;
   transcript: TranscriptTurn[];
   debrief: Debrief | null;
+  elevenlabsConversationId: string | null;
 };

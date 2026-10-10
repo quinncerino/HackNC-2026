@@ -120,4 +120,14 @@ At any time, `STOP` cancels the active session. A number cannot begin a second s
 
 ## Current MVP boundary
 
-The first version uses deterministic, scenario-aware dialogue so it can be tested without introducing another model credential. The transport, session state, consent controls, adaptive branches, transcript, debrief, and persistent memory are real. A model-backed response generator can replace `backend/services/imessage_agent_service.py` later without changing the Spectrum transport or frontend.
+The deterministic, scenario-aware dialogue in `backend/services/imessage_agent_service.py` is the
+fallback when ElevenLabs cannot connect. The transport, session state, consent controls,
+transcript, debrief, and persistent memory are stored by Nice Try.
+
+The current iMessage path uses each scenario's ElevenLabs agent in Chat Mode. Photon delivers an
+incoming text to Flask, Flask sends it as an ElevenLabs `user_message`, and the resulting
+`agent_response` is returned through Photon. Each Nice Try session keeps one live ElevenLabs
+conversation so the complete text exchange appears in ElevenLabs as a transcript. In each agent's
+ElevenLabs **Security** settings, allow the **Conversation → Text only** override. The bridge uses
+the opening message already configured on that agent rather than overriding it. If ElevenLabs is
+temporarily unavailable, Nice Try falls back to the deterministic local responder.

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import hmac
+import logging
 import os
 import re
 
@@ -11,6 +12,11 @@ import requests
 from flask import Blueprint, jsonify, request
 
 from services.debrief_service import build_debrief
+from services.elevenlabs_chat_service import (
+    ElevenLabsChatError,
+    end_imessage_chat,
+    get_imessage_chat_reply,
+)
 from services.imessage_agent_service import next_agent_message, opening_message, reveal_message
 from services.memory_service import (
     claim_imessage_event,
@@ -21,11 +27,13 @@ from services.memory_service import (
     latest_active_session,
     participant_memory_for_session,
     save_session,
+    set_elevenlabs_conversation,
     set_space,
 )
 from services.scenario_service import ScenarioNotFoundError, load_scenario
 
 imessage_blueprint = Blueprint("imessage", __name__)
+logger = logging.getLogger(__name__)
 
 PHONE_PATTERN = re.compile(r"^\+[1-9]\d{7,14}$")
 FIRST_NAME_PATTERN = re.compile(r"^[^\s].{0,49}$")
@@ -155,6 +163,7 @@ def receive_imessage_event():
     command = incoming_text.strip().upper()
 
     if command == "STOP":
+        end_imessage_chat(session["id"])
         save_session(session["id"], status="cancelled", stage="complete", transcript=transcript)
         return jsonify({"reply": "Nice Try training stopped. No further messages will be sent."})
 
@@ -163,12 +172,25 @@ def receive_imessage_event():
             return jsonify({"reply": "Reply START to begin the fictional training, or STOP to cancel."})
         memory = participant_memory_for_session(session)
         transcript.append({"role": "user", "text": "START"})
-        reply = opening_message(scenario, memory)
+        starter = opening_message(scenario, memory)
+        try:
+            reply, conversation_id = get_imessage_chat_reply(
+                session["id"],
+                scenario,
+                transcript[:-1],
+                "START",
+                first_message=starter,
+            )
+            set_elevenlabs_conversation(session["id"], conversation_id)
+        except ElevenLabsChatError as error:
+            logger.warning("ElevenLabs iMessage chat unavailable; using fallback: %s", error)
+            reply = starter
         transcript.append({"role": "agent", "text": reply})
         save_session(session["id"], status="active", stage="scenario", transcript=transcript)
         return jsonify({"reply": reply})
 
     if command in {"REVEAL", "DEBRIEF"}:
+        end_imessage_chat(session["id"])
         debrief = build_debrief(scenario, transcript)
         reply = reveal_message(debrief)
         transcript.append({"role": "agent", "text": reply})
@@ -179,7 +201,14 @@ def receive_imessage_event():
         return jsonify({"reply": reply})
 
     transcript.append({"role": "user", "text": incoming_text.strip()})
-    reply = next_agent_message(scenario, transcript)
+    try:
+        reply, conversation_id = get_imessage_chat_reply(
+            session["id"], scenario, transcript[:-1], incoming_text.strip()
+        )
+        set_elevenlabs_conversation(session["id"], conversation_id)
+    except ElevenLabsChatError as error:
+        logger.warning("ElevenLabs iMessage chat unavailable; using fallback: %s", error)
+        reply = next_agent_message(scenario, transcript)
     transcript.append({"role": "agent", "text": reply})
     save_session(session["id"], status="active", stage="scenario", transcript=transcript)
     return jsonify({"reply": reply})

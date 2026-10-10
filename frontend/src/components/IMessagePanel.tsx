@@ -146,7 +146,9 @@ export default function IMessagePanel({ scenario, onComplete }: IMessagePanelPro
         />
         <span>
           This is my number, or I have the recipient's explicit permission. I agree that the
-          first name and phone number will be shared with Photon to deliver this iMessage training.
+          first name and phone number will be shared with Photon to deliver this iMessage training,
+          and that message contents will be processed by ElevenLabs to generate agent replies and
+          maintain the conversation transcript.
         </span>
       </label>
       <button
@@ -158,7 +160,8 @@ export default function IMessagePanel({ scenario, onComplete }: IMessagePanelPro
       </button>
       <p className="privacy-reminder">
         Nice Try hashes the number for local training memory and retains only its last four digits
-        for display. Photon receives the number for iMessage delivery.
+        for display. Photon receives the number for iMessage delivery; ElevenLabs receives the
+        conversation text but not the participant&apos;s phone number.
       </p>
       {error && <p className="error-message">{error}</p>}
     </section>
