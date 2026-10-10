@@ -1,3 +1,14 @@
 {
-  "_comment": "Defines the fictional gift-card scam scenario, its tactics, safe outcomes, and evaluation rubric."
+  "id": "gift_card",
+  "title": "Gift Card Emergency",
+  "description": "Practice resisting secrecy and pressure to make an irreversible fictional payment.",
+  "difficulty": "Intermediate",
+  "tactics": ["Emotional pressure", "Urgency", "Secrecy", "Irreversible payment request"],
+  "saferResponse": "I will not purchase anything until I verify this request with someone I trust.",
+  "agentVariables": {
+    "scenario_name": "Gift Card Emergency",
+    "caller_identity": "a fictional administrative representative",
+    "fictional_problem": "an urgent fee supposedly remains unpaid",
+    "requested_action": "purchase a fictional gift card and read its practice number"
+  }
 }

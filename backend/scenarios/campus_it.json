@@ -1,3 +1,14 @@
 {
-  "_comment": "Defines the fictional campus IT scam scenario, its tactics, safe outcomes, and evaluation rubric."
+  "id": "campus_it",
+  "title": "Campus IT",
+  "description": "Practice responding to an urgent fictional account-suspension warning.",
+  "difficulty": "Beginner",
+  "tactics": ["Claimed authority", "Urgency", "Fear of account loss", "Verification-code request"],
+  "saferResponse": "I will contact the technology office using the number on its official website.",
+  "agentVariables": {
+    "scenario_name": "Campus IT",
+    "caller_identity": "Northbridge University IT desk",
+    "fictional_problem": "the student's account has been flagged for suspension",
+    "requested_action": "share the fictional practice code 000000"
+  }
 }
