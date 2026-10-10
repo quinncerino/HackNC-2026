@@ -40,7 +40,7 @@ signal.signal(signal.SIGINT, stop_conversation)
 
 print("Connecting to ElevenLabs agent...")
 conversation.start_session()
-
+#com 
 
 try:
     conversation_id = conversation.wait_for_session_end()
