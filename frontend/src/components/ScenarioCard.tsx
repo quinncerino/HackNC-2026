@@ -15,6 +15,6 @@ export default function ScenarioCard({ scenario, selected, onSelect }: ScenarioC
   return <button type="button" className={`scenario-card ${selected ? "scenario-card--selected" : ""}`} aria-pressed={selected} onClick={() => onSelect(scenario)}>
     <RetroIcon kind={icon} className="scenario-icon" />
     <span className="selection-box" aria-hidden="true">{selected ? "✓" : ""}</span>
-    <h2>{campus ? "Campus IT" : bank ? "Bank Alert" : scenario.title}</h2><p>{description}</p><span className="scenario-duration"><span className="clock-icon" aria-hidden="true"/>60 – 90 sec</span>
+    <h2>{campus ? "Campus IT" : bank ? "Bank Alert" : scenario.title}</h2><p>{description}</p>
   </button>;
 }
