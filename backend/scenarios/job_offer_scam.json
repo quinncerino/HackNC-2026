@@ -1,0 +1,15 @@
+{
+  "id": "job_offer_scam",
+  "title": "Job Offer Scam",
+  "description": "Practice handling a caller who claims you have been selected for a remote position and demands upfront payment to secure the job.",
+  "difficulty": "Intermediate",
+  "agentEnvVar": "ELEVENLABS_AGENT_ID_JOB_OFFER",
+  "tactics": ["Upfront payment", "Rushed hiring", "Pressure to accept"],
+  "saferResponse": "I’ll verify the position through the company’s official careers page.",
+  "agentVariables": {
+    "scenario_name": "Job Offer Scam",
+    "caller_identity": "a fictional recruiter for a remote job opportunity",
+    "fictional_problem": "an apparently urgent hiring decision that requires upfront payment for equipment",
+    "requested_action": "pay for equipment immediately to secure the fictional position"
+  }
+}
