@@ -3,6 +3,7 @@
   "title": "Campus IT",
   "description": "Practice responding to an urgent fictional account-suspension warning.",
   "difficulty": "Beginner",
+  "agentEnvVar": "ELEVENLABS_AGENT_ID_IT",
   "tactics": ["Claimed authority", "Urgency", "Fear of account loss", "Verification-code request"],
   "saferResponse": "I will contact the technology office using the number on its official website.",
   "agentVariables": {

@@ -127,18 +127,25 @@ Accounts, a database, real telephone calls, leaderboards, voice cloning, and pro
 
 ## ElevenLabs agent setup
 
-1. Create an ElevenLabs voice agent and enable authentication.
-2. Copy the first message and system prompt from `AGENT_PROMPT.txt` into the agent configuration.
-3. Define these dynamic variables in the ElevenLabs agent with safe test values:
+1. Create one authenticated ElevenLabs voice agent for each scenario: campus IT, bank alert, and gift-card emergency.
+2. Copy the first message and system prompt from `AGENT_PROMPT.txt` into each agent configuration, then tune the prompt and voice for that scenario as needed.
+3. Define these dynamic variables in every ElevenLabs agent with safe test values:
    - `scenario_name`
    - `caller_identity`
    - `fictional_problem`
    - `requested_action`
 4. Select a voice and LLM, then test the agent in the ElevenLabs preview.
-5. Copy the agent ID and create an ElevenLabs API key that can request conversation tokens.
-6. Copy `backend/.env.example` to `backend/.env` and replace both placeholder values.
+5. Copy each agent ID and create an ElevenLabs API key that can request conversation tokens.
+6. Copy `backend/.env.example` to `backend/.env` and replace all placeholder values:
 
-Flask uses the API key to call ElevenLabs' WebRTC token endpoint. React receives only the temporary conversation token and approved scenario variables; the permanent API key never reaches the browser.
+```dotenv
+ELEVENLABS_API_KEY=your_shared_api_key
+ELEVENLABS_AGENT_ID_IT=your_campus_it_agent_id
+ELEVENLABS_AGENT_ID_BANK=your_bank_agent_id
+ELEVENLABS_AGENT_ID_GIFT_CARD=your_gift_card_agent_id
+```
+
+Each scenario JSON file specifies the environment-variable name for its ElevenLabs agent. When React requests a session, Flask loads the selected scenario, resolves the corresponding agent ID, and requests a WebRTC token for that agent. React receives only the temporary conversation token and approved scenario variables; the permanent API key and agent-selection logic remain in Flask.
 
 ## Running locally
 

@@ -3,6 +3,7 @@
   "title": "Gift Card Emergency",
   "description": "Practice resisting secrecy and pressure to make an irreversible fictional payment.",
   "difficulty": "Intermediate",
+  "agentEnvVar": "ELEVENLABS_AGENT_ID_GIFT_CARD",
   "tactics": ["Emotional pressure", "Urgency", "Secrecy", "Irreversible payment request"],
   "saferResponse": "I will not purchase anything until I verify this request with someone I trust.",
   "agentVariables": {

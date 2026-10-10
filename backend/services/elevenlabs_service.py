@@ -14,14 +14,14 @@ class ElevenLabsError(RuntimeError):
     """Raised when a conversation token cannot be created."""
 
 
-def get_conversation_token() -> dict:
+def get_conversation_token(agent_env_var: str) -> dict:
     api_key = os.getenv("ELEVENLABS_API_KEY")
-    agent_id = os.getenv("ELEVENLABS_AGENT_ID")
+    agent_id = os.getenv(agent_env_var)
 
-    if not api_key or not agent_id:
-        raise ElevenLabsError(
-            "Set ELEVENLABS_API_KEY and ELEVENLABS_AGENT_ID in backend/.env"
-        )
+    if not api_key:
+        raise ElevenLabsError("Set ELEVENLABS_API_KEY in backend/.env")
+    if not agent_id:
+        raise ElevenLabsError(f"Set {agent_env_var} in backend/.env")
 
     try:
         response = requests.get(

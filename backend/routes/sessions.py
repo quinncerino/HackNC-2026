@@ -18,7 +18,7 @@ def create_session():
 
     try:
         scenario = load_scenario(scenario_id)
-        token_data = get_conversation_token()
+        token_data = get_conversation_token(scenario["agentEnvVar"])
     except ScenarioNotFoundError:
         return jsonify({"error": "Unknown scenario"}), 404
     except ElevenLabsError as error:
