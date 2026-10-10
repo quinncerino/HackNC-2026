@@ -1,0 +1,2 @@
+# Defines files and local secrets that Git should exclude once development begins.
+*.env
