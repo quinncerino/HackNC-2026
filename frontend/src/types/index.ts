@@ -29,3 +29,26 @@ export type Debrief = {
   evidence: DebriefEvidence[];
   saferResponse: string;
 };
+
+export type IMessageMemory = {
+  sessionsCompleted: number;
+  strengths: string[];
+  focusAreas: string[];
+};
+
+export type IMessageStartResponse = {
+  sessionId: string;
+  status: string;
+  maskedPhone: string;
+  optInPhoneNumber: string;
+  memory: IMessageMemory;
+};
+
+export type IMessageSession = {
+  id: string;
+  scenarioId: string;
+  status: string;
+  stage: string;
+  transcript: TranscriptTurn[];
+  debrief: Debrief | null;
+};

@@ -10,6 +10,10 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
 button { border: 0; border-radius: 10px; padding: 12px 16px; color: #fff; background: #176b43; cursor: pointer; font: inherit; font-weight: 700; }
 button:hover:not(:disabled) { background: #105432; }
 button:disabled { cursor: not-allowed; opacity: .5; }
+.primary-action { display: inline-block; border-radius: 10px; padding: 12px 16px; color: #fff; background: #176b43; font-weight: 700; text-decoration: none; }
+.primary-action:hover { background: #105432; }
+input { width: 100%; border: 1px solid #cbd4cd; border-radius: 10px; padding: 12px 14px; color: #172019; background: #fff; font: inherit; }
+input:focus { outline: 3px solid #d6ecdf; border-color: #176b43; }
 .page-shell { width: min(1040px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0 80px; }
 .hero { max-width: 700px; margin-bottom: 28px; }
 .hero h1, .page-header h1 { margin: 4px 0 12px; font-size: clamp(2.4rem, 7vw, 4.8rem); line-height: .95; }
@@ -33,6 +37,20 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 .call-status--connecting span { background: #dc8d27; }
 .call-status--connected span { background: #25a865; box-shadow: 0 0 0 6px #dff4e8; }
 .privacy-reminder, .empty-state { color: #68736b; }
+.channel-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; padding: 5px; border-radius: 14px; background: #e6ebe5; }
+.channel-choice { color: #4b574f; background: transparent; }
+.channel-choice:hover:not(:disabled) { color: #176b43; background: #f6faf7; }
+.channel-choice--active, .channel-choice--active:hover:not(:disabled) { color: #fff; background: #176b43; }
+.imessage-form { display: grid; justify-items: center; gap: 15px; }
+.imessage-form h2, .imessage-form p { margin: 0; }
+.imessage-form > p { max-width: 600px; }
+.imessage-form label:not(.consent-row) { width: min(440px, 100%); text-align: left; font-weight: 750; }
+.imessage-form label:not(.consent-row) input { margin-top: 7px; }
+.channel-icon { font-size: 2.4rem; }
+.consent-row { display: flex; align-items: flex-start; gap: 10px; max-width: 540px; text-align: left; line-height: 1.45; }
+.consent-row input { width: 18px; height: 18px; margin-top: 2px; accent-color: #176b43; }
+.imessage-active p { line-height: 1.55; }
+.memory-note { margin-top: 18px; padding: 12px 14px; border-radius: 12px; color: #25533a; background: #edf8f1; text-align: left; }
 .call-controls { display: flex; justify-content: center; gap: 12px; }
 .danger-action { background: #b83a3a; }
 .danger-action:hover:not(:disabled) { background: #942e2e; }
@@ -58,4 +76,5 @@ blockquote footer { margin-top: 8px; color: #657068; font-size: .9rem; }
   .scenario-grid, .debrief-grid { grid-template-columns: 1fr; }
   .feedback-card--wide { grid-column: auto; }
   .page-header { flex-direction: column; }
+  .channel-picker { grid-template-columns: 1fr; }
 }

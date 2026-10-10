@@ -90,6 +90,8 @@ Live audio should travel directly between the React client and ElevenLabs rather
 ```
 The starter implementation includes the local Flask API, React screens, scenario loading, deterministic debriefing, and a protected ElevenLabs WebRTC token flow.
 
+The project also includes a consent-based Photon Spectrum iMessage MVP. Participants can send a safe training invitation to their own phone, complete a scenario in Messages, and receive a browser debrief. Privacy-conscious memory carries strengths and focus areas into later sessions. See [IMESSAGE_SETUP.md](IMESSAGE_SETUP.md) for setup and demo instructions.
+
 ## Backend responsibilities
 The Flask backend will eventually expose a small API:
 - `GET /api/scenarios` returns safe public information about the available scenarios.
