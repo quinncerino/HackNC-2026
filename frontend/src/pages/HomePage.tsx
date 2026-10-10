@@ -50,7 +50,7 @@ export default function HomePage({ onChooseScenario, onHowItWorks }: HomePagePro
 
       <section className="scenario-grid" aria-label="Training scenarios">
         {scenarios.map((scenario) => (
-          <ScenarioCard key={scenario.id} scenario={scenario} selected={(selectedId ?? scenarios[0]?.id) === scenario.id} onSelect={(item) => setSelectedId(item.id)} />
+          <ScenarioCard key={scenario.id} scenario={scenario} selected={(selectedId ?? scenarios[0]?.id) === scenario.id} onSelect={(item) => setSelectedId(item.id)} onStart={onChooseScenario} />
         ))}
       </section>
       <div className="start-row"><button type="button" className="primary-action" disabled={!scenarios.length} onClick={() => {

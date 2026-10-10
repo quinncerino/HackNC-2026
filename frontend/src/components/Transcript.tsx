@@ -4,9 +4,10 @@ import type { TranscriptTurn } from "../types";
 
 type TranscriptProps = {
   turns: TranscriptTurn[];
+  callerName?: string;
 };
 
-export default function Transcript({ turns }: TranscriptProps) {
+export default function Transcript({ turns, callerName = "Caller" }: TranscriptProps) {
   const latestMessageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export default function Transcript({ turns }: TranscriptProps) {
         turns.map((turn, index) => (
           <div className={`transcript-turn transcript-turn--${turn.role}`} key={`${index}-${turn.text}`}>
             <span className="speaker-avatar" aria-hidden="true">♟</span>
-            <strong>{turn.role === "agent" ? "Caller" : "You"}</strong>
+            <strong>{turn.role === "agent" ? callerName : "You"}</strong>
             <p>{turn.text}</p>
           </div>
         ))
