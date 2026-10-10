@@ -3,12 +3,21 @@
 import re
 
 
+def _strip_tone_markers(text: str) -> str:
+    cleaned = re.sub(r"\[(?:[A-Za-z]+)\]", " ", text)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned)
+    return cleaned.strip()
+
+
 def _user_turns(transcript: list[dict]) -> list[str]:
-    return [
-        str(turn.get("text", "")).strip()
-        for turn in transcript
-        if turn.get("role") == "user" and turn.get("text")
-    ]
+    cleaned_turns = []
+    for turn in transcript:
+        if turn.get("role") != "user" or not turn.get("text"):
+            continue
+        cleaned = _strip_tone_markers(str(turn.get("text", "")))
+        if cleaned:
+            cleaned_turns.append(cleaned)
+    return cleaned_turns
 
 
 def _first_matching_turn(turns: list[str], terms: tuple[str, ...]) -> str | None:

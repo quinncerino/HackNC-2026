@@ -4,11 +4,18 @@ import { useConversation } from "@elevenlabs/react";
 import { createSession } from "../services/api";
 import type { TranscriptTurn } from "../types";
 
+function stripToneMarkers(text: string): string {
+  return text
+    .replace(/\[(?:[A-Za-z]+)\]/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 function normalizeMessage(message: unknown): TranscriptTurn | null {
   if (!message || typeof message !== "object") return null;
 
   const record = message as Record<string, unknown>;
-  const text = typeof record.message === "string" ? record.message.trim() : "";
+  const text = typeof record.message === "string" ? stripToneMarkers(record.message) : "";
   const source = record.source ?? record.role;
   if (!text) return null;
 
