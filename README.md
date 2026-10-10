@@ -41,19 +41,27 @@ Live audio should travel directly between the React client and ElevenLabs rather
 │   ├── app.py
 │   ├── requirements.txt
 │   ├── .env
+│   ├── .env.example
 │   ├── routes/
+│   │   ├── __init__.py
 │   │   ├── scenarios.py
 │   │   ├── sessions.py
 │   │   └── debrief.py
 │   ├── services/
+│   │   ├── __init__.py
 │   │   ├── elevenlabs_service.py
-│   │   └── debrief_service.py
+│   │   ├── debrief_service.py
+│   │   └── scenario_service.py
 │   └── scenarios/
 │       ├── campus_it.json
 │       ├── bank_alert.json
 │       └── gift_card.json
 ├── frontend/
 │   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig.json
+│   ├── tsconfig.app.json
+│   ├── tsconfig.node.json
 │   ├── vite.config.ts
 │   ├── index.html
 │   └── src/
@@ -80,7 +88,7 @@ Live audio should travel directly between the React client and ElevenLabs rather
 ├── README.md
 └── .gitignore
 ```
-Every scaffolded implementation file currently contains only a short description of its intended responsibility. No application logic, dependencies, or scenario content has been implemented yet.
+The starter implementation includes the local Flask API, React screens, scenario loading, deterministic debriefing, and a protected ElevenLabs WebRTC token flow.
 
 ## Backend responsibilities
 The Flask backend will eventually expose a small API:
@@ -117,5 +125,79 @@ Before adding secrets to `backend/.env`, configure `.gitignore` so local environ
 Development should begin with one complete campus IT scenario. The first milestone is a reliable path from scenario selection to live call to debrief. The bank-alert and gift-card scenarios should reuse that same flow and be added only after the first scenario works end to end.
 Accounts, a database, real telephone calls, leaderboards, voice cloning, and production installers are outside the initial hackathon scope.
 
-## Current status
-The repository contains the agreed project scaffold and documentation only. Implementation has not started.
+## ElevenLabs agent setup
+
+1. Create an ElevenLabs voice agent and enable authentication.
+2. Copy the first message and system prompt from `AGENT_PROMPT.txt` into the agent configuration.
+3. Define these dynamic variables in the ElevenLabs agent with safe test values:
+   - `scenario_name`
+   - `caller_identity`
+   - `fictional_problem`
+   - `requested_action`
+4. Select a voice and LLM, then test the agent in the ElevenLabs preview.
+5. Copy the agent ID and create an ElevenLabs API key that can request conversation tokens.
+6. Copy `backend/.env.example` to `backend/.env` and replace both placeholder values.
+
+Flask uses the API key to call ElevenLabs' WebRTC token endpoint. React receives only the temporary conversation token and approved scenario variables; the permanent API key never reaches the browser.
+
+## Running locally
+
+The project currently uses two development processes.
+
+### Backend
+
+From the repository root:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+cp backend/.env.example backend/.env
+cd backend
+python app.py
+```
+
+Add the real ElevenLabs values to `backend/.env` before starting a call. The API runs at `http://127.0.0.1:5000`. Confirm it with `GET /api/health`.
+
+### Frontend
+
+In a second terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the local URL printed by Vite, normally `http://localhost:5173`. Vite proxies `/api` requests to Flask.
+
+## Implemented starter flow
+
+1. React requests the three local scenarios from Flask.
+2. The participant selects a scenario and opens the practice screen.
+3. React asks Flask to create a session.
+4. Flask validates the scenario and requests a short-lived WebRTC token from ElevenLabs.
+5. React requests microphone access and starts the ElevenLabs session using that token and the scenario's dynamic variables.
+6. ElevenLabs sends caller and participant transcript turns back to React.
+7. When the participant hangs up, React sends the transcript to Flask.
+8. Flask applies starter deterministic rules and returns the debrief.
+9. React displays the warning signs, protective actions, evidence, and safer phrase.
+
+## Current limitations
+
+- A configured ElevenLabs agent and internet connection are required for live calls.
+- The debrief currently uses simple deterministic rules. LLM-assisted interpretation is still future work.
+- Application state is held in memory and is lost on refresh.
+- The starter has no accounts, database, automated end-of-call transition, or production rate limiting.
+- Scenario prompt quality and transcript behavior still need live testing with the team's ElevenLabs account.
+
+## Verification
+
+The frontend can be type-checked and bundled with:
+
+```bash
+cd frontend
+npm run build
+```
+
+The Flask health, scenario, and debrief routes can be exercised without an ElevenLabs key. `/api/session` intentionally returns a configuration error until valid credentials are added to `backend/.env`.
