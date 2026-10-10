@@ -108,6 +108,7 @@ async function ensurePhotonUser(firstName: string, phoneNumber: string) {
       `nicetry+${participantId}@example.com`,
       "--phone",
       phoneNumber,
+      "--invite",
     ]);
   }
 
@@ -189,15 +190,22 @@ async function listenForMessages() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          messageId: message.id,
           phoneNumber,
           spaceId: space.id,
           text: message.content.text,
         }),
       });
-      const result = await apiResponse.json() as { reply?: string; error?: string };
-      if (!apiResponse.ok || !result.reply) {
+      const result = await apiResponse.json() as {
+        duplicate?: boolean;
+        reply?: string;
+        error?: string;
+      };
+      if (!apiResponse.ok) {
         throw new Error(result.error ?? "Nice Try API did not return a reply");
       }
+      if (result.duplicate) continue;
+      if (!result.reply) throw new Error("Nice Try API did not return a reply");
       await space.responding(async () => {
         await space.send(result.reply!);
       });

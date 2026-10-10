@@ -49,7 +49,7 @@ class IMessageFlowTest(unittest.TestCase):
         began = self.client.post(
             "/api/imessage/event",
             headers=self.auth,
-            json={"phoneNumber": "+19195550123", "text": "START"},
+            json={"messageId": "message-start", "phoneNumber": "+19195550123", "text": "START"},
         )
         self.assertEqual(began.status_code, 200)
         self.assertIn("SIMULATION START", began.get_json()["reply"])
@@ -59,15 +59,28 @@ class IMessageFlowTest(unittest.TestCase):
             headers=self.auth,
             json={
                 "phoneNumber": "+19195550123",
+                "messageId": "message-challenge",
                 "text": "No, I will call back using the official website.",
             },
         )
         self.assertEqual(challenged.status_code, 200)
 
+        duplicate = self.client.post(
+            "/api/imessage/event",
+            headers=self.auth,
+            json={
+                "phoneNumber": "+19195550123",
+                "messageId": "message-challenge",
+                "text": "No, I will call back using the official website.",
+            },
+        )
+        self.assertEqual(duplicate.status_code, 200)
+        self.assertTrue(duplicate.get_json()["duplicate"])
+
         revealed = self.client.post(
             "/api/imessage/event",
             headers=self.auth,
-            json={"phoneNumber": "+19195550123", "text": "REVEAL"},
+            json={"messageId": "message-reveal", "phoneNumber": "+19195550123", "text": "REVEAL"},
         )
         self.assertEqual(revealed.status_code, 200)
         self.assertIn("SIMULATION REVEALED", revealed.get_json()["reply"])
@@ -92,7 +105,7 @@ class IMessageFlowTest(unittest.TestCase):
     def test_internal_event_requires_authentication(self):
         response = self.client.post(
             "/api/imessage/event",
-            json={"phoneNumber": "+19195550123", "text": "START"},
+            json={"messageId": "message-unauthorized", "phoneNumber": "+19195550123", "text": "START"},
         )
         self.assertEqual(response.status_code, 401)
 

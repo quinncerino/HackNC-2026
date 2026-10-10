@@ -13,6 +13,7 @@ from flask import Blueprint, jsonify, request
 from services.debrief_service import build_debrief
 from services.imessage_agent_service import next_agent_message, opening_message, reveal_message
 from services.memory_service import (
+    claim_imessage_event,
     complete_participant_memory,
     create_session,
     deserialize_session,
@@ -128,12 +129,22 @@ def receive_imessage_event():
     payload = request.get_json(silent=True) or {}
     phone_number = _normalize_phone(payload.get("phoneNumber"))
     incoming_text = payload.get("text")
-    if phone_number is None or not isinstance(incoming_text, str) or not incoming_text.strip():
-        return jsonify({"error": "phoneNumber and text are required"}), 400
+    message_id = payload.get("messageId")
+    if (
+        phone_number is None
+        or not isinstance(incoming_text, str)
+        or not incoming_text.strip()
+        or not isinstance(message_id, str)
+        or not message_id
+    ):
+        return jsonify({"error": "messageId, phoneNumber, and text are required"}), 400
 
     session = latest_active_session(phone_number)
     if session is None:
         return jsonify({"reply": "No active Nice Try session. Start one from the web app."})
+
+    if not claim_imessage_event(message_id):
+        return jsonify({"duplicate": True})
 
     space_id = payload.get("spaceId")
     if isinstance(space_id, str) and space_id:

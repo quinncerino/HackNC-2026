@@ -51,7 +51,8 @@ When a participant consents, the Spectrum service uses the official Photon CLI t
 that phone number to the project's user allowlist before sending the training message. The form
 collects only a first name and phone number. Photon requires the remaining user fields, so Nice
 Try supplies `Participant` as the last name and a deterministic, non-personal `example.com`
-address; it does not request an email invitation. Local development can use credentials saved by
+address. It also requests Photon's onboarding invitation so a newly registered participant can
+bind to their assigned shared line. Local development can use credentials saved by
 `photon auth login`. An unattended deployment should set `PHOTON_API_TOKEN` to a management token
 provided by Photon.
 

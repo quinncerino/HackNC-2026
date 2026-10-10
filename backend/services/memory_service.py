@@ -52,6 +52,11 @@ def _connect() -> sqlite3.Connection:
 
         CREATE INDEX IF NOT EXISTS idx_imessage_sessions_phone_status
         ON imessage_sessions(phone_hash, status, updated_at);
+
+        CREATE TABLE IF NOT EXISTS processed_imessage_events (
+            message_id TEXT PRIMARY KEY,
+            processed_at TEXT NOT NULL
+        );
         """
     )
     return connection
@@ -157,6 +162,16 @@ def get_session(session_id: str) -> dict | None:
             "SELECT * FROM imessage_sessions WHERE id = ?", (session_id,)
         ).fetchone()
     return dict(row) if row else None
+
+
+def claim_imessage_event(message_id: str) -> bool:
+    """Atomically claim an inbound message so only one listener can reply."""
+    with _database() as connection:
+        cursor = connection.execute(
+            "INSERT OR IGNORE INTO processed_imessage_events (message_id, processed_at) VALUES (?, ?)",
+            (message_id, _now()),
+        )
+    return cursor.rowcount == 1
 
 
 def save_session(
