@@ -1,12 +1,26 @@
 import { useEffect, useRef } from "react";
 
+import userAvatar from "../assets/transcript-user.png";
+import callerAvatar from "../assets/transcript-caller.png";
+
 import type { TranscriptTurn } from "../types";
 
 type TranscriptProps = {
   turns: TranscriptTurn[];
+  scenarioId?: string;
 };
 
-export default function Transcript({ turns }: TranscriptProps) {
+const callerNames: Record<string, string> = {
+  campus_it: "Alex",
+  bank_alert: "Jeremy",
+  package_delivery_problem: "Jones",
+  job_offer_scam: "Sam",
+  gift_card: "Robert",
+  family_emergency: "Jim",
+};
+
+export default function Transcript({ turns, scenarioId }: TranscriptProps) {
+  const callerName = scenarioId ? callerNames[scenarioId] ?? "Caller" : "Caller";
   const latestMessageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,8 +50,14 @@ export default function Transcript({ turns }: TranscriptProps) {
       ) : (
         turns.map((turn, index) => (
           <div className={`transcript-turn transcript-turn--${turn.role}`} key={`${index}-${turn.text}`}>
-            <span className="speaker-avatar" aria-hidden="true">♟</span>
-            <strong>{turn.role === "agent" ? "Caller" : "You"}</strong>
+            <span className="speaker-avatar" aria-hidden="true" style={{ background: "transparent" }}>
+              <img
+                src={turn.role === "agent" ? callerAvatar : userAvatar}
+                alt=""
+                style={{ width: "100%", height: "100%", objectFit: "contain", imageRendering: "pixelated" }}
+              />
+            </span>
+            <strong>{turn.role === "agent" ? callerName : "You"}</strong>
             <p>{turn.text}</p>
           </div>
         ))

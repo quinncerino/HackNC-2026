@@ -2,7 +2,6 @@ import { useState } from "react";
 
 import CallControls from "../components/CallControls";
 import CallStatus from "../components/CallStatus";
-import IMessagePanel from "../components/IMessagePanel";
 import Transcript from "../components/Transcript";
 import { useScamCall } from "../hooks/useScamCall";
 import { createDebrief } from "../services/api";
@@ -16,7 +15,6 @@ type PracticePageProps = {
 
 export default function PracticePage({ scenario, onCancel, onComplete }: PracticePageProps) {
   const call = useScamCall();
-  const [channel, setChannel] = useState<"voice" | "imessage">("imessage");
   const [isFinishing, setIsFinishing] = useState(false);
   const [pageError, setPageError] = useState<string | null>(null);
 
@@ -54,46 +52,22 @@ export default function PracticePage({ scenario, onCancel, onComplete }: Practic
         </div>
       </header>
 
-      <div className="channel-picker" aria-label="Choose a practice channel">
-        <button
-          type="button"
-          className={channel === "imessage" ? "channel-choice channel-choice--active" : "channel-choice"}
-          onClick={() => setChannel("imessage")}
-          disabled={call.status !== "disconnected"}
-        >
-          iMessage
-        </button>
-        <button
-          type="button"
-          className={channel === "voice" ? "channel-choice channel-choice--active" : "channel-choice"}
-          onClick={() => setChannel("voice")}
-          disabled={call.status !== "disconnected"}
-        >
-          Browser voice
-        </button>
-      </div>
+      <section className="call-panel">
+        <CallStatus status={call.status} isSpeaking={call.isSpeaking} />
+        <p className="privacy-reminder">Use fictional information only. You can hang up at any time.</p>
+      </section>
 
-      {channel === "imessage" ? (
-        <IMessagePanel scenario={scenario} onComplete={onComplete} />
-      ) : (
-        <>
-          <section className="call-panel">
-            <CallStatus status={call.status} isSpeaking={call.isSpeaking} />
-            <p className="privacy-reminder">Use fictional information only. You can hang up at any time.</p>
-            <CallControls
-              status={call.status}
-              isMuted={call.isMuted}
-              isFinishing={isFinishing}
-              onStart={startCall}
-              onToggleMute={() => call.setMuted(!call.isMuted)}
-              onHangUp={finishCall}
-            />
-            {(pageError || call.error) && <p className="error-message">{pageError ?? call.error}</p>}
-          </section>
+      <Transcript turns={call.transcript} scenarioId={scenario.id} />
 
-          <Transcript turns={call.transcript} />
-        </>
-      )}
+      <CallControls
+        status={call.status}
+        isMuted={call.isMuted}
+        isFinishing={isFinishing}
+        onStart={startCall}
+        onToggleMute={() => call.setMuted(!call.isMuted)}
+        onHangUp={finishCall}
+      />
+      {(pageError || call.error) && <p className="error-message">{pageError ?? call.error}</p>}
     </main>
   );
 }

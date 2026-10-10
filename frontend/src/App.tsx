@@ -1,17 +1,20 @@
 import { useState } from "react";
 
 import characterLogo from "./assets/nice-try-character.png";
+import ModePage from "./pages/ModePage";
+import TextPracticePage from "./pages/TextPracticePage";
 import HomePage from "./pages/HomePage";
 import PracticePage from "./pages/PracticePage";
 import ResultsPage from "./pages/ResultsPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import type { Debrief, Scenario } from "./types";
 
-type Screen = "home" | "practice" | "results";
+type Screen = "mode" | "home" | "practice" | "results";
 
 export default function App() {
   const [showHelp, setShowHelp] = useState(false);
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen] = useState<Screen>("mode");
+  const [mode, setMode] = useState<"text" | "phone">("phone");
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [debrief, setDebrief] = useState<Debrief | null>(null);
 
@@ -22,7 +25,21 @@ export default function App() {
   }
 
   let content;
-  if (screen === "practice" && scenario) {
+  if (screen === "mode") {
+    content = <ModePage onHowItWorks={() => setShowHelp(true)} onChoose={(nextMode) => {
+      setMode(nextMode);
+      setScreen("home");
+    }} />;
+  } else if (screen === "practice" && scenario && mode === "text") {
+    content = <TextPracticePage
+      scenario={scenario}
+      onCancel={() => setScreen("home")}
+      onComplete={(result) => {
+        setDebrief(result);
+        setScreen("results");
+      }}
+    />;
+  } else if (screen === "practice" && scenario) {
     content = (
       <PracticePage
         scenario={scenario}
@@ -45,7 +62,7 @@ export default function App() {
     );
   }
 
-  else { content = <HomePage onChooseScenario={chooseScenario} onHowItWorks={() => setShowHelp(true)} />; }
+  else { content = <HomePage mode={mode} onBack={() => setScreen("mode")} onChooseScenario={chooseScenario} onHowItWorks={() => setShowHelp(true)} />; }
   return (
     <div className="desktop-window">
       <header className="desktop-titlebar">
