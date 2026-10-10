@@ -1180,3 +1180,67 @@ body, button, input, textarea, select, summary {
     padding: 12px 16px;
   }
 }
+
+.training-modes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  max-width: 900px;
+  margin: 32px auto;
+}
+
+.mode-card {
+  min-height: 280px;
+}
+
+.text-setup {
+  max-width: 620px;
+  margin: 24px auto;
+}
+
+.text-setup p, .text-instructions p {
+  line-height: 1.7;
+}
+
+.text-setup label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.text-setup input:not([type="checkbox"]) {
+  width: 100%;
+  padding: 12px;
+  font: inherit;
+  color: var(--navy);
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  background: var(--cream);
+}
+
+.text-setup .text-consent {
+  flex-direction: row;
+  align-items: flex-start;
+  line-height: 1.6;
+}
+
+.text-consent input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 4px;
+  accent-color: var(--blue);
+}
+
+.text-line {
+  font-size: 26px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+  .training-modes {
+    grid-template-columns: 1fr;
+  }
+}

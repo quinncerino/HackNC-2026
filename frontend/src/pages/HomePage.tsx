@@ -7,9 +7,11 @@ import type { Scenario } from "../types";
 type HomePageProps = {
   onChooseScenario: (scenario: Scenario) => void;
   onHowItWorks: () => void;
+  mode: "text" | "phone";
+  onBack: () => void;
 };
 
-export default function HomePage({ onChooseScenario, onHowItWorks }: HomePageProps) {
+export default function HomePage({ onChooseScenario, onHowItWorks, mode, onBack }: HomePageProps) {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,10 +25,12 @@ export default function HomePage({ onChooseScenario, onHowItWorks }: HomePagePro
 
   return (
     <main className="page-shell">
+      <button className="text-action" onClick={onBack}>← Training options</button>
       <header className="hero">
-        <h1>Practice the call. <span>Spot the scam.</span></h1>
+        <p style={{ fontSize: "14px", margin: "0 0 10px", color: "#53678f" }}>Selected: {mode === "text" ? "Text Message" : "Phone Call"}</p>
+        <h1>{mode === "text" ? "Practice the text." : "Practice the call."} <span>Spot the scam.</span></h1>
         <p>
-          Build confidence with realistic, fictional scam calls.
+          Build confidence with realistic, fictional scam {mode === "text" ? "messages" : "calls"}.
         </p>
       </header>
 
@@ -50,7 +54,7 @@ export default function HomePage({ onChooseScenario, onHowItWorks }: HomePagePro
 
       <section className="scenario-grid" aria-label="Training scenarios">
         {scenarios.map((scenario) => (
-          <ScenarioCard key={scenario.id} scenario={scenario} selected={(selectedId ?? scenarios[0]?.id) === scenario.id} onSelect={(item) => setSelectedId(item.id)} />
+          <ScenarioCard key={scenario.id} scenario={scenario} selected={(selectedId ?? scenarios[0]?.id) === scenario.id} onSelect={(item) => setSelectedId(item.id)} onStart={onChooseScenario} />
         ))}
       </section>
       <div className="start-row"><button type="button" className="primary-action" disabled={!scenarios.length} onClick={() => {
