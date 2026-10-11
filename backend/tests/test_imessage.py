@@ -95,9 +95,11 @@ class IMessageFlowTest(unittest.TestCase):
         self.assertEqual(
             status.get_json()["elevenlabsConversationId"], "elevenlabs-test-conversation"
         )
-        self.assertIn(
-            "Chose to verify through an independent channel",
-            status.get_json()["debrief"]["protectiveActions"],
+        self.assertTrue(
+            any(
+                "You mentioned checking through a separate channel." in item
+                for item in status.get_json()["debrief"]["protectiveActions"]
+            )
         )
 
         second = self.client.post(
@@ -105,9 +107,11 @@ class IMessageFlowTest(unittest.TestCase):
             json={"scenarioId": "bank_alert", "firstName": "Taylor", "phoneNumber": "+19195550123", "consent": True},
         )
         self.assertEqual(second.get_json()["memory"]["sessionsCompleted"], 1)
-        self.assertIn(
-            "Chose to verify through an independent channel",
-            second.get_json()["memory"]["strengths"],
+        self.assertTrue(
+            any(
+                "You mentioned checking through a separate channel." in item
+                for item in second.get_json()["memory"]["strengths"]
+            )
         )
 
     def test_internal_event_requires_authentication(self):
@@ -116,6 +120,47 @@ class IMessageFlowTest(unittest.TestCase):
             json={"messageId": "message-unauthorized", "phoneNumber": "+19195550123", "text": "START"},
         )
         self.assertEqual(response.status_code, 401)
+
+    @patch("routes.imessage.end_imessage_chat")
+    @patch("routes.imessage.get_imessage_chat_reply")
+    @patch("routes.imessage.requests.post")
+    def test_agent_declaring_simulation_complete_finishes_session(
+        self, post: Mock, chat_reply: Mock, end_chat: Mock
+    ):
+        post.return_value.raise_for_status.return_value = None
+        post.return_value.json.return_value = {"optInPhoneNumber": "+19195550999"}
+        chat_reply.side_effect = [
+            ("Hello, this is your bank.", "conversation-final"),
+            (
+                "Since you refused the code, you avoided the scam. The simulation is now complete.",
+                "conversation-final",
+            ),
+        ]
+
+        started = self.client.post(
+            "/api/imessage/start",
+            json={"scenarioId": "bank_alert", "firstName": "Taylor", "phoneNumber": "+19195550123", "consent": True},
+        )
+        session_id = started.get_json()["sessionId"]
+        self.client.post(
+            "/api/imessage/event",
+            headers=self.auth,
+            json={"messageId": "auto-finish-start", "phoneNumber": "+19195550123", "text": "START"},
+        )
+
+        response = self.client.post(
+            "/api/imessage/event",
+            headers=self.auth,
+            json={"messageId": "auto-finish-reply", "phoneNumber": "+19195550123", "text": "I won't share the code."},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.get_json()["completed"])
+        end_chat.assert_called_once_with(session_id)
+        status = self.client.get(f"/api/imessage/session/{session_id}").get_json()
+        self.assertEqual(status["status"], "complete")
+        self.assertIsNotNone(status["debrief"])
+        self.assertIn("Protect sensitive information", [skill["name"] for skill in status["debrief"]["skills"]])
 
     def test_event_without_active_session_is_ignored(self):
         response = self.client.post(
@@ -138,6 +183,29 @@ class IMessageFlowTest(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("first name", response.get_json()["error"])
+
+    @patch("routes.imessage.requests.post")
+    def test_cancel_session_releases_phone_for_another_session(self, post: Mock):
+        post.return_value.raise_for_status.return_value = None
+        post.return_value.json.return_value = {"optInPhoneNumber": "+19195550999"}
+        started = self.client.post(
+            "/api/imessage/start",
+            json={"scenarioId": "campus_it", "firstName": "Taylor", "phoneNumber": "+19195550123", "consent": True},
+        )
+        session_id = started.get_json()["sessionId"]
+
+        cancelled = self.client.post(f"/api/imessage/session/{session_id}/cancel")
+
+        self.assertEqual(cancelled.status_code, 200)
+        self.assertEqual(cancelled.get_json(), {"status": "cancelled"})
+        status = self.client.get(f"/api/imessage/session/{session_id}")
+        self.assertEqual(status.get_json()["status"], "cancelled")
+
+        restarted = self.client.post(
+            "/api/imessage/start",
+            json={"scenarioId": "campus_it", "firstName": "Taylor", "phoneNumber": "+19195550123", "consent": True},
+        )
+        self.assertEqual(restarted.status_code, 200)
 
 
 if __name__ == "__main__":

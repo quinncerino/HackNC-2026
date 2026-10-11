@@ -37,6 +37,11 @@ logger = logging.getLogger(__name__)
 
 PHONE_PATTERN = re.compile(r"^\+[1-9]\d{7,14}$")
 FIRST_NAME_PATTERN = re.compile(r"^[^\s].{0,49}$")
+SIMULATION_COMPLETE_PATTERN = re.compile(
+    r"\b(?:the )?(?:simulation|training|exercise) (?:is|has been) (?:now )?(?:complete|completed|finished|over)\b|"
+    r"\b(?:this|the) (?:simulation|training|exercise) (?:is|has) ended\b",
+    re.IGNORECASE,
+)
 
 
 def _normalize_phone(value: object) -> str | None:
@@ -211,6 +216,16 @@ def receive_imessage_event():
         logger.warning("ElevenLabs iMessage chat unavailable; using fallback: %s", error)
         reply = next_agent_message(scenario, transcript)
     transcript.append({"role": "agent", "text": reply})
+    if SIMULATION_COMPLETE_PATTERN.search(reply):
+        end_imessage_chat(session["id"])
+        debrief = build_debrief(scenario, transcript)
+        save_session(
+            session["id"], status="complete", stage="complete", transcript=transcript, debrief=debrief
+        )
+        complete_participant_memory(session, debrief)
+        logger.info("Auto-completed iMessage session after the agent declared the simulation complete")
+        return jsonify({"reply": reply, "completed": True})
+
     save_session(session["id"], status="active", stage="scenario", transcript=transcript)
     return jsonify({"reply": reply})
 
@@ -223,3 +238,20 @@ def imessage_session_status(session_id: str):
     if session is None:
         return jsonify({"error": "Unknown session"}), 404
     return jsonify(deserialize_session(session))
+
+
+@imessage_blueprint.post("/imessage/session/<session_id>/cancel")
+def cancel_imessage_session(session_id: str):
+    if not re.fullmatch(r"[a-f0-9]{32}", session_id):
+        return jsonify({"error": "Unknown session"}), 404
+    session = get_session(session_id)
+    if session is None:
+        return jsonify({"error": "Unknown session"}), 404
+
+    if session["status"] in {"pending", "active"}:
+        end_imessage_chat(session_id)
+        transcript = json.loads(session["transcript_json"] or "[]")
+        save_session(session_id, status="cancelled", stage="complete", transcript=transcript)
+        return jsonify({"status": "cancelled"})
+
+    return jsonify({"status": session["status"]})

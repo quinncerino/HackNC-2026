@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
 import Transcript from "../components/Transcript";
-import { getIMessageSession, startIMessageSession } from "../services/api";
+import { cancelIMessageSession, getIMessageSession, startIMessageSession } from "../services/api";
 import type { Debrief, IMessageSession, IMessageStartResponse, Scenario } from "../types";
 
 type TextPracticePageProps = {
@@ -16,6 +16,7 @@ export default function TextPracticePage({ scenario, onCancel, onComplete }: Tex
   const [phoneNumber, setPhoneNumber] = useState("");
   const [consent, setConsent] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [start, setStart] = useState<IMessageStartResponse | null>(null);
   const [session, setSession] = useState<IMessageSession | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -65,10 +66,30 @@ export default function TextPracticePage({ scenario, onCancel, onComplete }: Tex
 
   const ended = session && ["complete", "cancelled", "failed"].includes(session.status);
 
+  useEffect(() => {
+    if (session?.status === "complete" && session.debrief) onComplete(session.debrief);
+  }, [session?.status, session?.debrief, onComplete]);
+
+  async function returnToScenarios() {
+    if (starting || leaving) return;
+    if (start && !ended) {
+      setLeaving(true);
+      setError(null);
+      try {
+        await cancelIMessageSession(start.sessionId);
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : "Could not end the training session.");
+        setLeaving(false);
+        return;
+      }
+    }
+    onCancel();
+  }
+
   return (
     <main className="page-shell text-practice">
-      <button className="text-action" onClick={onCancel} disabled={starting || Boolean(start && !ended)}>
-        ← Scenarios
+      <button className="text-action" onClick={returnToScenarios} disabled={starting || leaving}>
+        {leaving ? "Ending training…" : "← Scenarios"}
       </button>
       <header className="hero">
         <h1>{scenario.title}</h1>
@@ -111,11 +132,6 @@ export default function TextPracticePage({ scenario, onCancel, onComplete }: Tex
             {session?.status === "failed" && <p>The session failed. You can return to scenarios and try again.</p>}
           </section>
           <Transcript turns={session?.transcript ?? []} scenarioId={scenario.id} />
-          {session?.debrief && (
-            <div className="start-row">
-              <button className="primary-action" onClick={() => onComplete(session.debrief!)}>View feedback →</button>
-            </div>
-          )}
         </>
       )}
     </main>
