@@ -117,6 +117,20 @@ class IMessageFlowTest(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
+    def test_event_without_active_session_is_ignored(self):
+        response = self.client.post(
+            "/api/imessage/event",
+            headers=self.auth,
+            json={
+                "messageId": "message-without-session",
+                "phoneNumber": "+19195550123",
+                "text": "Hello",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {"ignored": True})
+
     def test_start_requires_first_name(self):
         response = self.client.post(
             "/api/imessage/start",
