@@ -149,7 +149,8 @@ def receive_imessage_event():
 
     session = latest_active_session(phone_number)
     if session is None:
-        return jsonify({"reply": "No active Nice Try session. Start one from the web app."})
+        logger.info("Ignoring iMessage event without an active Nice Try session")
+        return jsonify({"ignored": True})
 
     if not claim_imessage_event(message_id):
         return jsonify({"duplicate": True})

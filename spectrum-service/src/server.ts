@@ -177,7 +177,11 @@ server.post("/outreach", authorize, async (request, response) => {
 
 async function listenForMessages() {
   for await (const [space, message] of spectrum.messages) {
-    if (!imessage.is(message) || message.content.type !== "text") continue;
+    if (
+      !imessage.is(message)
+      || message.direction !== "inbound"
+      || message.content.type !== "text"
+    ) continue;
 
     const phoneNumber = message.sender?.id;
     if (!phoneNumber) continue;
@@ -198,13 +202,14 @@ async function listenForMessages() {
       });
       const result = await apiResponse.json() as {
         duplicate?: boolean;
+        ignored?: boolean;
         reply?: string;
         error?: string;
       };
       if (!apiResponse.ok) {
         throw new Error(result.error ?? "Nice Try API did not return a reply");
       }
-      if (result.duplicate) continue;
+      if (result.duplicate || result.ignored) continue;
       if (!result.reply) throw new Error("Nice Try API did not return a reply");
       await space.responding(async () => {
         await space.send(result.reply!);
