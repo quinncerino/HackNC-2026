@@ -94,6 +94,7 @@ export default function TextPracticePage({ scenario, onCancel, onComplete }: Tex
       <header className="hero">
         <h1>{scenario.title}</h1>
         <p>Text message training</p>
+        <p>Text REVEAL to end the conversation.</p>
       </header>
       {error && <p className="error-message" role="alert">{error}</p>}
       {!start ? (
