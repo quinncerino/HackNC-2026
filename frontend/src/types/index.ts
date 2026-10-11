@@ -22,12 +22,37 @@ export type DebriefEvidence = {
   explanation: string;
 };
 
+export type DebriefSkill = {
+  name: string;
+  status: "Demonstrated" | "Not demonstrated" | "Not enough evidence";
+  detail: string;
+};
+
+export type DebriefMoment = {
+  callerSaid: string;
+  youSaid: string;
+  assessment: "helped" | "left_opening";
+  why: string;
+  strongerResponse: string;
+};
+
+export type ScenarioWarningSign = {
+  title: string;
+  explanation: string;
+};
+
 export type Debrief = {
   tactics: string[];
   protectiveActions: string[];
   riskyActions: string[];
   evidence: DebriefEvidence[];
   saferResponse: string;
+  transcriptUsable?: boolean;
+  mainTakeaway?: string;
+  keyMoments?: DebriefMoment[];
+  skills?: DebriefSkill[];
+  nextPracticeGoal?: string;
+  scenarioWarningSigns?: ScenarioWarningSign[];
 };
 
 export type IMessageMemory = {

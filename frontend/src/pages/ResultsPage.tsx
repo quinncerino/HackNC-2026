@@ -4,10 +4,11 @@ import type { Debrief, Scenario } from "../types";
 type ResultsPageProps = {
   scenario: Scenario;
   debrief: Debrief;
+  onPracticeAgain: () => void;
   onRestart: () => void;
 };
 
-export default function ResultsPage({ scenario, debrief, onRestart }: ResultsPageProps) {
+export default function ResultsPage({ scenario, debrief, onPracticeAgain, onRestart }: ResultsPageProps) {
   return (
     <main className="page-shell">
       <header className="page-header">
@@ -18,7 +19,14 @@ export default function ResultsPage({ scenario, debrief, onRestart }: ResultsPag
         </div>
       </header>
       <DebriefPanel debrief={debrief} />
-      <div className="start-row"><button type="button" onClick={onRestart}>← Back to scenarios</button></div>
+      <div className="results-actions">
+        <button type="button" className="results-primary-action" onClick={onPracticeAgain}>
+          Practice that moment again <span aria-hidden="true">→</span>
+        </button>
+        <button type="button" className="results-secondary-action" onClick={onRestart}>
+          ← Back to scenarios
+        </button>
+      </div>
     </main>
   );
 }

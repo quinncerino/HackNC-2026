@@ -1049,4 +1049,105 @@ body {
   line-height: 1.65;
 }
 
+.debrief-insights {
+  padding-left: 22px;
+  line-height: 1.65;
+}
+
+.debrief-insights li + li {
+  margin-top: 16px;
+}
+
+.debrief-moment + .debrief-moment {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #aabbd6;
+}
+
+.debrief-moment blockquote {
+  margin: 14px 0;
+  overflow-wrap: anywhere;
+}
+
+.debrief-response {
+  display: block;
+  width: 100%;
+  margin: 12px 0 20px;
+  padding: 16px;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.6;
+  color: #101452;
+  background: #fff;
+  border: 1px solid #7b98c7;
+  border-radius: 4px;
+}
+
+.debrief-checklist {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid #7b98c7;
+}
+
+.debrief-checklist legend {
+  padding: 0 8px;
+  font-weight: bold;
+}
+
+.debrief-skill {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 0;
+  cursor: pointer;
+}
+
+.debrief-skill input {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  accent-color: #182564;
+}
+
+.debrief-skill small {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.debrief-small {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #445379;
+}
+
+.debrief-comparison {
+  margin-top: 24px;
+  padding: 20px;
+  background: #edf3ff;
+  border: 1px solid #7b98c7;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+.debrief-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.debrief-response:focus-visible,
+.debrief-skill input:focus-visible {
+  outline: 3px solid #395cef;
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .debrief-compare-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 }
