@@ -10,11 +10,16 @@ export type TranscriptTurn = {
   text: string;
 };
 
+export type SessionDynamicVariables = Record<string, string | number | boolean> & {
+  training_code?: string;
+};
+
 export type SessionResponse = {
   conversationToken: string;
   conversationId: string | null;
   scenario: Pick<Scenario, "id" | "title" | "description">;
-  dynamicVariables: Record<string, string | number | boolean>;
+  dynamicVariables: SessionDynamicVariables;
+  training_code?: string;
 };
 
 export type DebriefEvidence = {

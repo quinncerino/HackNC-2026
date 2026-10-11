@@ -27,20 +27,28 @@ export function getScenarios(): Promise<Scenario[]> {
   return apiRequest<Scenario[]>("/api/scenarios");
 }
 
-export function createSession(scenarioId: string): Promise<SessionResponse> {
+export function createSession(scenarioId: string, sessionId?: string): Promise<SessionResponse> {
   return apiRequest<SessionResponse>("/api/session", {
     method: "POST",
-    body: JSON.stringify({ scenarioId }),
+    body: JSON.stringify({ scenarioId, session_id: sessionId }),
   });
 }
 
 export function createDebrief(
   scenarioId: string,
   transcript: TranscriptTurn[],
+  sessionId?: string,
 ): Promise<Debrief> {
   return apiRequest<Debrief>("/api/debrief", {
     method: "POST",
-    body: JSON.stringify({ scenarioId, transcript }),
+    body: JSON.stringify({ scenarioId, transcript, session_id: sessionId }),
+  });
+}
+
+export function sendTrainingCode(phone: string, consent: boolean): Promise<{ session_id: string }> {
+  return apiRequest<{ session_id: string }>("/api/sms/code", {
+    method: "POST",
+    body: JSON.stringify({ phone, consent }),
   });
 }
 
