@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
 
 import { createSession } from "../services/api";
@@ -26,6 +26,7 @@ function normalizeMessage(message: unknown): TranscriptTurn | null {
 
 export function useScamCall() {
   const [transcript, setTranscript] = useState<TranscriptTurn[]>([]);
+  const transcriptRef = useRef<TranscriptTurn[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
 
@@ -33,11 +34,11 @@ export function useScamCall() {
     const turn = normalizeMessage(message);
     if (!turn) return;
 
-    setTranscript((current) => {
-      const previous = current.at(-1);
-      if (previous?.role === turn.role && previous.text === turn.text) return current;
-      return [...current, turn];
-    });
+    const previous = transcriptRef.current.at(-1);
+    if (previous?.role === turn.role && previous.text === turn.text) return;
+    const next = [...transcriptRef.current, turn];
+    transcriptRef.current = next;
+    setTranscript(next);
   }, []);
 
   const conversation = useConversation({
@@ -47,6 +48,7 @@ export function useScamCall() {
 
   async function start(scenarioId: string) {
     setError(null);
+    transcriptRef.current = [];
     setTranscript([]);
 
     const media = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -69,6 +71,7 @@ export function useScamCall() {
     transcript,
     error,
     status: conversation.status,
+    getLatestTranscript: () => transcriptRef.current,
     isSpeaking: conversation.isSpeaking,
     isMuted: conversation.isMuted,
     setMuted: conversation.setMuted,
