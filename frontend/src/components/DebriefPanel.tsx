@@ -8,11 +8,8 @@ export default function DebriefPanel({ debrief }: DebriefPanelProps) {
   const detailedReviewAvailable = Boolean(debrief.mainTakeaway && debrief.skills && debrief.keyMoments);
   const transcriptUsable = debrief.transcriptUsable ?? debrief.evidence.length > 0;
   const keyMoments = debrief.keyMoments ?? [];
-  const skills = debrief.skills ?? [
-    { name: "Set a clear boundary", status: "Not enough evidence" as const, detail: "The running API did not return the detailed skill assessment." },
-    { name: "Verify independently", status: "Not enough evidence" as const, detail: "The running API did not return the detailed skill assessment." },
-    { name: "End the conversation", status: "Not enough evidence" as const, detail: "The running API did not return the detailed skill assessment." },
-  ];
+  const skills = (debrief.skills ?? []).filter((skill) => !skill.status || skill.status === "Demonstrated");
+  const improvements = debrief.improvements ?? (debrief.nextPracticeGoal ? [debrief.nextPracticeGoal] : []);
   const scenarioWarningSigns = debrief.scenarioWarningSigns ?? debrief.tactics.map((tactic) => {
     const cleanTactic = tactic.replace(/^Scenario warning sign:\s*/, "");
     const [title, ...explanation] = cleanTactic.split(" — ");
@@ -21,9 +18,9 @@ export default function DebriefPanel({ debrief }: DebriefPanelProps) {
 
   return (
     <div className="debrief-grid">
-      <section className="feedback-card feedback-card--wide feedback-card--takeaway" aria-labelledby="main-takeaway">
-        <p className="eyebrow">Your main takeaway</p>
-        <h2 id="main-takeaway">{debrief.mainTakeaway ?? "The API returned an older review format. Restart the backend to load evidence-linked insights."}</h2>
+      <section className="feedback-card feedback-card--wide feedback-card--takeaway" aria-labelledby="main-takeaway-heading">
+        <h2 className="debrief-feature-heading" id="main-takeaway-heading">Your main takeaway</h2>
+        <p className="debrief-feature-copy">{debrief.mainTakeaway ?? "The API returned an older review format. Restart the backend to load evidence-linked insights."}</p>
         {!detailedReviewAvailable && (
           <p className="debrief-small">This attempt has no personalized skills or key-moment assessment yet.</p>
         )}
@@ -63,22 +60,29 @@ export default function DebriefPanel({ debrief }: DebriefPanelProps) {
         )}
       </section>
 
-      <section className="feedback-card feedback-card--wide" aria-labelledby="skills-demonstrated">
-        <h2 id="skills-demonstrated">Skills demonstrated</h2>
-        <p className="debrief-small">These labels describe only what appeared in the captured transcript.</p>
-        <ul className="debrief-skill-results">
-          {skills.map((skill) => (
-            <li className={`debrief-skill-result debrief-skill-result--${skill.status.toLowerCase().replaceAll(" ", "-")}`} key={skill.name}>
-              <div><strong>{skill.name}</strong><span>{skill.status}</span></div>
-              <p>{skill.detail}</p>
-            </li>
-          ))}
-        </ul>
+      <section className="feedback-card feedback-card--wide feedback-card--positive" aria-labelledby="what-went-well">
+        <h2 id="what-went-well">What you did well</h2>
+        {skills.length ? (
+          <ul className="debrief-strength-list">
+            {skills.map((skill) => (
+              <li key={skill.name}>
+                <strong>{skill.name}</strong>
+                {skill.detail && <p>{skill.detail}</p>}
+                {skill.evidence && <blockquote>“{skill.evidence}”</blockquote>}
+              </li>
+            ))}
+          </ul>
+        ) : <p>No clear strengths were identified in the captured responses this time. Use the suggestions below as a practice plan.</p>}
       </section>
 
-      <section className="feedback-card feedback-card--wide feedback-card--goal" aria-labelledby="next-goal">
-        <p className="eyebrow">Your next practice goal</p>
-        <h2 id="next-goal">{debrief.nextPracticeGoal ?? "Try again and practice one clear boundary followed by independent verification."}</h2>
+      <section className="feedback-card feedback-card--wide feedback-card--goal" aria-labelledby="what-to-improve">
+        <h2 className="debrief-feature-heading" id="what-to-improve">What you could improve next time</h2>
+        <p className="debrief-feature-copy">{debrief.nextPracticeGoal ?? "Try again and practice one clear boundary followed by independent verification."}</p>
+        {improvements.length > 1 && (
+          <ul className="debrief-improvement-list">
+            {improvements.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        )}
       </section>
 
       <details className="feedback-card feedback-card--wide scenario-guidance">
