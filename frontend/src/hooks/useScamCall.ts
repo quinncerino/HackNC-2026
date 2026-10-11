@@ -28,6 +28,7 @@ export function useScamCall() {
   const [transcript, setTranscript] = useState<TranscriptTurn[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const addMessage = useCallback((message: unknown) => {
     const turn = normalizeMessage(message);
@@ -45,17 +46,21 @@ export function useScamCall() {
     onError: (message) => setError(String(message)),
   });
 
-  async function start(scenarioId: string) {
+  async function start(scenarioId: string, requestedSessionId?: string | null) {
     setError(null);
     setTranscript([]);
+    setSessionId(requestedSessionId ?? null);
 
     const media = await navigator.mediaDevices.getUserMedia({ audio: true });
     media.getTracks().forEach((track) => track.stop());
 
-    const session = await createSession(scenarioId);
+    const session = await createSession(scenarioId, requestedSessionId ?? undefined);
     conversation.startSession({
       conversationToken: session.conversationToken,
-      dynamicVariables: session.dynamicVariables,
+      dynamicVariables: {
+        ...session.dynamicVariables,
+        training_code: String(session.dynamicVariables.training_code ?? "000000"),
+      },
     });
     setConversationId(session.conversationId);
   }
@@ -66,6 +71,7 @@ export function useScamCall() {
 
   return {
     conversationId,
+    sessionId,
     transcript,
     error,
     status: conversation.status,

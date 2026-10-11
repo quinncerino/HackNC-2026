@@ -149,6 +149,23 @@ ELEVENLABS_AGENT_ID_GIFT_CARD=your_gift_card_agent_id
 
 Each scenario JSON file specifies the environment-variable name for its ElevenLabs agent. When React requests a session, Flask loads the selected scenario, resolves the corresponding agent ID, and requests a WebRTC token for that agent. React receives only the temporary conversation token and approved scenario variables; the permanent API key and agent-selection logic remain in Flask.
 
+## Twilio SMS training code
+
+The app can send a fictional six-digit training code to the participant before the live call starts. Copy the placeholders from `backend/.env.example` to `backend/.env` and add the real Twilio values there, not in frontend code. The required variables are:
+
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_FROM_NUMBER`
+
+The flow is simple:
+1. The participant enters their own phone number and checks the consent box.
+2. Flask validates the number, requires consent, and rate limits one code request per number per 30 seconds.
+3. Flask creates a random six-digit fictional code, stores it by session id, and sends the SMS.
+4. The client only sends the generated session id back to Flask and ElevenLabs receives the same value as the dynamic variable named `training_code`.
+5. The debrief checks the transcript to see whether the participant repeated the fictional code.
+
+Twilio trial accounts only send to verified numbers. Use a fictional code, never a real verification code, and keep all safety rules in place. The SMS body says this is a fictional training code, not a real code, and includes "Reply STOP to opt out". The code is never used for real account sign in, passwords, payment, or account verification.
+
 ## Running locally
 
 The project currently uses two development processes.

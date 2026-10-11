@@ -2,6 +2,7 @@ type CallControlsProps = {
   status: "disconnected" | "connecting" | "connected" | "error";
   isMuted: boolean;
   isFinishing: boolean;
+  startDisabled?: boolean;
   onStart: () => void;
   onToggleMute: () => void;
   onHangUp: () => void;
@@ -11,13 +12,14 @@ export default function CallControls({
   status,
   isMuted,
   isFinishing,
+  startDisabled = false,
   onStart,
   onToggleMute,
   onHangUp,
 }: CallControlsProps) {
   if (status === "disconnected" || status === "error") {
     return (
-      <button type="button" className="primary-action" onClick={onStart} disabled={isFinishing}>
+      <button type="button" className="primary-action" onClick={onStart} disabled={isFinishing || startDisabled}>
         Start practice call
       </button>
     );
