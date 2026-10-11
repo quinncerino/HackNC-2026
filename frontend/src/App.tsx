@@ -57,6 +57,10 @@ export default function App() {
       <ResultsPage
         scenario={scenario}
         debrief={debrief}
+        onPracticeAgain={() => {
+          chooseScenario(scenario);
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        }}
         onRestart={() => setScreen("home")}
       />
     );
