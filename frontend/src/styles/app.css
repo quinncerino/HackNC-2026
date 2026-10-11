@@ -11,8 +11,9 @@
   --line:#476b9e;
 }
 
-* {
+*,*::before,*::after {
   box-sizing:border-box;
+  font-family:inherit;
 }
 
 body {
