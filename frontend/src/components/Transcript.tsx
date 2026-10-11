@@ -107,11 +107,20 @@ export default function Transcript({ turns, scenarioId }: TranscriptProps) {
       ) : (
         turns.map((turn, index) => (
           <div className={`transcript-turn transcript-turn--${turn.role}`} key={`${index}-${turn.text}`}>
-            <span className="speaker-avatar" aria-hidden="true" style={{ background: "transparent" }}>
+            <span className="speaker-avatar" aria-hidden="true" style={{ background: "transparent", position: "relative", width: "100%", minWidth: 0, overflow: "hidden" }}>
               <img
                 src={turn.role === "agent" ? callerAvatar : userAvatar}
                 alt=""
-                style={{ width: "100%", height: "100%", objectFit: "contain", imageRendering: "pixelated" }}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "block",
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  objectPosition: "center",
+                  imageRendering: "pixelated",
+                }}
               />
             </span>
             <strong>{turn.role === "agent" ? callerName : "You"}</strong>
