@@ -24,8 +24,9 @@ export type DebriefEvidence = {
 
 export type DebriefSkill = {
   name: string;
-  status: "Demonstrated" | "Not demonstrated" | "Not enough evidence";
   detail: string;
+  evidence?: string;
+  status?: "Demonstrated" | "Not demonstrated" | "Not enough evidence";
 };
 
 export type DebriefMoment = {
@@ -51,6 +52,7 @@ export type Debrief = {
   mainTakeaway?: string;
   keyMoments?: DebriefMoment[];
   skills?: DebriefSkill[];
+  improvements?: string[];
   nextPracticeGoal?: string;
   scenarioWarningSigns?: ScenarioWarningSign[];
 };

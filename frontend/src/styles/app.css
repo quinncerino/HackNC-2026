@@ -11,8 +11,9 @@
   --line:#476b9e;
 }
 
-* {
+*,*::before,*::after {
   box-sizing:border-box;
+  font-family:inherit;
 }
 
 body {
@@ -565,9 +566,20 @@ button:focus-visible,summary:focus-visible {
   background:linear-gradient(120deg,#e7f1ff,#f8fbff);
 }
 
-.feedback-card--takeaway h2,.feedback-card--goal h2 {
-  font-size:clamp(23px,3vw,34px);
-  line-height:1.45;
+.debrief-feature-heading {
+  margin:0 0 14px;
+  color:var(--navy);
+  font-size:clamp(27px,3.2vw,38px);
+  font-weight:900;
+  letter-spacing:-.7px;
+  line-height:1.2;
+}
+
+.debrief-feature-copy {
+  margin:0;
+  font-size:clamp(18px,2vw,22px);
+  font-weight:400;
+  line-height:1.65;
 }
 
 .debrief-moments {
@@ -627,46 +639,42 @@ button:focus-visible,summary:focus-visible {
 .debrief-skill-results {
   list-style:none;
   padding:0!important;
-  display:grid;
-  gap:12px;
-}
-
-.debrief-skill-result {
-  padding:14px 16px;
-  background:#fff9;
-  border:1px solid #b4c4dc;
-  border-radius:4px;
-}
-
-.debrief-skill-result>div {
   display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
+  flex-wrap:wrap;
+  gap:10px;
 }
 
-.debrief-skill-result>div span {
-  padding:5px 9px;
-  border-radius:20px;
-  background:#e9edf4;
-  font-size:14px;
+.debrief-skill-tag {
+  padding:9px 13px;
+  border:1px solid #297a52;
+  border-radius:4px;
+  background:#e4f8e9;
   font-weight:700;
-  white-space:nowrap;
 }
 
-.debrief-skill-result--demonstrated>div span {
-  color:#125d37;
-  background:#d8f4e1;
+.debrief-strength-list,.debrief-improvement-list {
+  padding-left:22px;
 }
 
-.debrief-skill-result--not-demonstrated>div span {
-  color:#823411;
-  background:#ffeadb;
+.debrief-strength-list li,.debrief-improvement-list li {
+  line-height:1.6;
+  margin:12px 0;
 }
 
-.debrief-skill-result p {
+.debrief-strength-list p {
+  margin:5px 0;
+}
+
+.debrief-strength-list blockquote {
+  margin:8px 0;
+  padding:10px 14px;
+  border-left:4px solid #42a879;
+  background:#fff9;
   line-height:1.5;
-  margin:8px 0 0;
+}
+
+.debrief-improvement-list {
+  margin-top:14px;
 }
 
 .debrief-small {
@@ -838,11 +846,6 @@ button:focus-visible,summary:focus-visible {
 
   .debrief-exchange {
     grid-template-columns:1fr;
-  }
-
-  .debrief-skill-result>div {
-    align-items:flex-start;
-    flex-direction:column;
   }
 
   .help-menu>div {
