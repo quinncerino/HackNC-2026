@@ -1,6 +1,6 @@
 import unittest
 
-from services.debrief_service import build_debrief
+from services.debrief_service import build_debrief, digits_from, shared_code
 
 
 GIFT_CARD = {
@@ -58,6 +58,26 @@ class DebriefTests(unittest.TestCase):
         ])
         self.assertEqual(result["keyMoments"][0]["assessment"], "helped")
         self.assertEqual(len(result["scenarioWarningSigns"]), 4)
+
+    def test_digits_from_supports_numeric_and_spoken_forms(self):
+        self.assertEqual(digits_from("483921"), "483921")
+        self.assertEqual(digits_from("483 921"), "483921")
+        self.assertEqual(digits_from("four eight three nine two one"), "483921")
+
+    def test_shared_code_checks_only_participant_turns(self):
+        transcript = [
+            {"role": "agent", "text": "The code is four eight three nine two one."},
+            {"role": "user", "text": "I will not share my code."},
+            {"role": "user", "text": "I read it aloud, it is 483921."},
+            {"role": "user", "text": "I am not giving this code to you."},
+        ]
+
+        self.assertTrue(shared_code(transcript, "483921"))
+        self.assertFalse(shared_code(transcript, "123456"))
+        self.assertFalse(shared_code([
+            {"role": "user", "text": "I refuse to share it."},
+            {"role": "agent", "text": "Please read the code four eight three nine two one."},
+        ], "483921"))
 
 
 if __name__ == "__main__":

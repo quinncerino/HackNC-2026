@@ -2,6 +2,7 @@
 
 from flask import Blueprint, jsonify, request
 
+from services import code_store
 from services.elevenlabs_service import ElevenLabsError, get_conversation_token
 from services.scenario_service import ScenarioNotFoundError, load_scenario
 
@@ -12,6 +13,7 @@ sessions_blueprint = Blueprint("sessions", __name__)
 def create_session():
     payload = request.get_json(silent=True) or {}
     scenario_id = payload.get("scenarioId")
+    provided_session_id = payload.get("session_id")
 
     if not isinstance(scenario_id, str) or not scenario_id:
         return jsonify({"error": "scenarioId is required"}), 400
@@ -24,6 +26,12 @@ def create_session():
     except ElevenLabsError as error:
         return jsonify({"error": str(error)}), 502
 
+    dynamic_variables = dict(scenario["agentVariables"])
+    if isinstance(provided_session_id, str):
+        dynamic_variables["training_code"] = code_store.get_code(provided_session_id) or "000000"
+    else:
+        dynamic_variables["training_code"] = "000000"
+
     return jsonify(
         {
             "conversationToken": token_data["token"],
@@ -33,6 +41,6 @@ def create_session():
                 "title": scenario["title"],
                 "description": scenario["description"],
             },
-            "dynamicVariables": scenario["agentVariables"],
+            "dynamicVariables": dynamic_variables,
         }
     )

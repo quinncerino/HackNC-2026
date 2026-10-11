@@ -3,6 +3,52 @@
 import re
 
 
+_NUMBER_WORDS = {
+    "zero": "0",
+    "oh": "0",
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+}
+
+
+def digits_from(text: str) -> str:
+    """Extract digits and spoken number words from a text sample."""
+    if text is None:
+        return ""
+
+    chunks: list[str] = []
+    for token in re.findall(r"\d+|[A-Za-z]+", str(text).lower()):
+        if token.isdigit():
+            chunks.append(token)
+        elif token in _NUMBER_WORDS:
+            chunks.append(_NUMBER_WORDS[token])
+    return "".join(chunks)
+
+
+def shared_code(transcript: list[dict], code: str) -> bool:
+    """Check whether the participant repeated the training code in the transcript."""
+    if not isinstance(code, str):
+        return False
+
+    code_digits = re.sub(r"\D", "", code)
+    if not code_digits:
+        return False
+
+    participant_digits = "".join(
+        digits_from(str(turn.get("text", "")))
+        for turn in transcript
+        if isinstance(turn, dict) and turn.get("role") == "user"
+    )
+    return code_digits in participant_digits
+
+
 def _strip_tone_markers(text: str) -> str:
     text = re.sub(r"\[[A-Za-z]+\]", " ", text)
     return re.sub(r"\s+", " ", text).strip()
@@ -237,10 +283,57 @@ def _clean_transcript(transcript: list[dict]) -> list[dict[str, str]]:
     return cleaned_turns
 
 
-def build_debrief(scenario: dict, transcript: list[dict]) -> dict:
+def build_debrief(scenario: dict, transcript: list[dict], session_code: str | None = None) -> dict:
     """Return legacy feedback plus evidence-linked, cautious practice insights."""
     debrief = _build_legacy_debrief(scenario, transcript)
     turns = _clean_transcript(transcript)
+
+    if session_code:
+        code_digits = re.sub(r"\D", "", str(session_code))
+        if code_digits and shared_code(transcript, code_digits):
+            moment = next(
+                (
+                    turn["text"]
+                    for turn in transcript
+                    if isinstance(turn, dict)
+                    and turn.get("role") == "user"
+                    and code_digits in re.sub(r"\D", "", digits_from(str(turn.get("text", ""))))
+                ),
+                None,
+            )
+            description = (
+                "You repeated the fictional training code in the conversation. "
+                "That would be risky in a real call because a caller could use it to act like they verified you. "
+                "Keep codes private and end the call before sharing them."
+            )
+            if moment:
+                debrief["evidence"].append({"quote": moment, "explanation": description})
+            debrief["riskyActions"].append(description)
+            debrief["saferResponse"] = (
+                "I will not share a code. I will verify this with a trusted official channel I choose."
+            )
+        else:
+            protective_moment = next(
+                (
+                    turn["text"]
+                    for turn in transcript
+                    if isinstance(turn, dict)
+                    and turn.get("role") == "user"
+                    and re.search(
+                        r"\b(?:won['’]t|will not|do not|don['’]t|not sharing|not giving|not reading|refuse to|not saying)\b",
+                        str(turn.get("text", "")),
+                        re.IGNORECASE,
+                    )
+                ),
+                None,
+            )
+            description = (
+                "You kept the fictional training code private. That is a strong protective habit. "
+                "Keep codes private and verify the caller through a method you choose."
+            )
+            if protective_moment:
+                debrief["evidence"].append({"quote": protective_moment, "explanation": description})
+            debrief["protectiveActions"].append(description)
     user_turns = [turn["text"] for turn in turns if turn["role"] == "user"]
     caller_turns = [turn["text"] for turn in turns if turn["role"] == "agent"]
     usable = bool(user_turns and caller_turns)
