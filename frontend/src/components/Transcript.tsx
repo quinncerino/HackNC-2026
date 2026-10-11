@@ -99,6 +99,8 @@ export default function Transcript({ turns, scenarioId }: TranscriptProps) {
     return () => window.cancelAnimationFrame(frame);
   }, [turns]);
 
+  if (!turns.some((turn) => turn.text.trim().length > 0)) return null;
+
   return (
     <section className="transcript" aria-live="polite">
       <h2>Live transcript</h2>
