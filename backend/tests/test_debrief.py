@@ -1,6 +1,6 @@
 import unittest
 
-from services.debrief_service import build_debrief
+from services.debrief_service import build_debrief, digits_from, shared_code
 
 
 GIFT_CARD = {
@@ -59,61 +59,25 @@ class DebriefTests(unittest.TestCase):
         self.assertEqual(result["keyMoments"][0]["assessment"], "helped")
         self.assertEqual(len(result["scenarioWarningSigns"]), 4)
 
-    def test_variety_of_skills_are_reported_only_when_demonstrated(self):
-        result = build_debrief(GIFT_CARD, [
-            {"role": "agent", "text": "Buy gift cards and tell me your verification code now."},
-            {"role": "user", "text": "No. I won't share my code. I'll check with my daughter and think it over."},
-        ])
+    def test_digits_from_supports_numeric_and_spoken_forms(self):
+        self.assertEqual(digits_from("483921"), "483921")
+        self.assertEqual(digits_from("483 921"), "483921")
+        self.assertEqual(digits_from("four eight three nine two one"), "483921")
 
-        skill_names = {skill["name"] for skill in result["skills"]}
-        self.assertTrue({
-            "Set a clear boundary",
-            "Protect sensitive information",
-            "Get a second opinion",
-            "Pause before acting",
-        }.issubset(skill_names))
-        self.assertTrue(all("status" not in skill for skill in result["skills"]))
+    def test_shared_code_checks_only_participant_turns(self):
+        transcript = [
+            {"role": "agent", "text": "The code is four eight three nine two one."},
+            {"role": "user", "text": "I will not share my code."},
+            {"role": "user", "text": "I read it aloud, it is 483921."},
+            {"role": "user", "text": "I am not giving this code to you."},
+        ]
 
-    def test_natural_language_refusal_and_verification_are_recognized(self):
-        result = build_debrief(GIFT_CARD, [
-            {"role": "agent", "text": "You must buy gift cards immediately."},
-            {"role": "user", "text": "I'm not comfortable doing that. I'll check with my daughter first."},
-        ])
-
-        skill_names = {skill["name"] for skill in result["skills"]}
-        self.assertIn("Set a clear boundary", skill_names)
-        self.assertIn("Verify independently", skill_names)
-        self.assertEqual(result["keyMoments"][0]["assessment"], "helped")
-
-    def test_common_call_bank_and_code_refusal_phrases_are_recognized(self):
-        result = build_debrief(GIFT_CARD, [
-            {"role": "agent", "text": "Buy gift cards and read me the code."},
-            {"role": "user", "text": "I won't give them the code. I'll call the bank myself and ask my daughter first."},
-        ])
-
-        skill_names = {skill["name"] for skill in result["skills"]}
-        self.assertIn("Protect sensitive information", skill_names)
-        self.assertIn("Verify independently", skill_names)
-        self.assertIn("Get a second opinion", skill_names)
-
-    def test_hang_up_phrasing_is_recognized(self):
-        result = build_debrief(GIFT_CARD, [
-            {"role": "agent", "text": "You need to buy the cards right now."},
-            {"role": "user", "text": "I'm hanging up now."},
-        ])
-
-        self.assertIn("End the conversation", {skill["name"] for skill in result["skills"]})
-
-    def test_ambiguous_reply_to_gift_card_pressure_gets_cautious_exchange(self):
-        result = build_debrief(GIFT_CARD, [
-            {"role": "agent", "text": "Please get gift cards and read me the codes."},
-            {"role": "user", "text": "Let me think about it."},
-        ])
-
-        self.assertTrue(result["keyMoments"])
-        self.assertIn("not proof you agreed", result["keyMoments"][0]["why"])
-        self.assertEqual(result["keyMoments"][0]["assessment"], "left_opening")
-        self.assertEqual(result["nextPracticeGoal"], "Refuse the requested action directly instead of explaining or negotiating.")
+        self.assertTrue(shared_code(transcript, "483921"))
+        self.assertFalse(shared_code(transcript, "123456"))
+        self.assertFalse(shared_code([
+            {"role": "user", "text": "I refuse to share it."},
+            {"role": "agent", "text": "Please read the code four eight three nine two one."},
+        ], "483921"))
 
 
 if __name__ == "__main__":

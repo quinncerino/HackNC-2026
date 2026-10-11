@@ -6,6 +6,7 @@ from routes.debrief import debrief_blueprint
 from routes.imessage import imessage_blueprint
 from routes.scenarios import scenarios_blueprint
 from routes.sessions import sessions_blueprint
+from routes.sms import sms_bp
 
 
 def create_app() -> Flask:
@@ -14,6 +15,7 @@ def create_app() -> Flask:
     app.register_blueprint(sessions_blueprint, url_prefix="/api")
     app.register_blueprint(debrief_blueprint, url_prefix="/api")
     app.register_blueprint(imessage_blueprint, url_prefix="/api")
+    app.register_blueprint(sms_bp, url_prefix="/api")
 
     @app.get("/api/health")
     def health():
