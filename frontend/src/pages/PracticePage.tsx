@@ -40,6 +40,18 @@ export default function PracticePage({ scenario, onCancel, onComplete }: Practic
     }
   }
 
+  const showStartButton = call.status === "disconnected" || call.status === "error";
+  const controls = (
+    <CallControls
+        status={call.status}
+        isMuted={call.isMuted}
+        isFinishing={isFinishing}
+        onStart={startCall}
+        onToggleMute={() => call.setMuted(!call.isMuted)}
+        onHangUp={finishCall}
+      />
+  );
+
   return (
     <main className="page-shell practice-layout">
       <header className="page-header">
@@ -55,18 +67,14 @@ export default function PracticePage({ scenario, onCancel, onComplete }: Practic
       <section className="call-panel">
         <CallStatus status={call.status} isSpeaking={call.isSpeaking} />
         <p className="privacy-reminder">Use fictional information only. You can hang up at any time.</p>
+        {showStartButton && <div className="start-row">{controls}</div>}
       </section>
 
-      <Transcript turns={call.transcript} scenarioId={scenario.id} />
+      {(call.status === "connected" || call.transcript.length > 0) && (
+        <Transcript turns={call.transcript} scenarioId={scenario.id} />
+      )}
 
-      <CallControls
-        status={call.status}
-        isMuted={call.isMuted}
-        isFinishing={isFinishing}
-        onStart={startCall}
-        onToggleMute={() => call.setMuted(!call.isMuted)}
-        onHangUp={finishCall}
-      />
+      {!showStartButton && controls}
       {(pageError || call.error) && <p className="error-message">{pageError ?? call.error}</p>}
     </main>
   );

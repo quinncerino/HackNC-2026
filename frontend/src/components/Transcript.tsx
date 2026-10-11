@@ -23,13 +23,70 @@ export default function Transcript({ turns, scenarioId }: TranscriptProps) {
   const callerName = scenarioId ? callerNames[scenarioId] ?? "Caller" : "Caller";
   const latestMessageRef = useRef<HTMLDivElement>(null);
 
+  const followPageRef = useRef(true);
+
   useEffect(() => {
-    if (turns.length === 0) return;
+    let previousY = window.scrollY;
+    let touchY: number | null = null;
+
+    const pauseFollowing = () => {
+      followPageRef.current = false;
+      // Stop any smooth scroll already in progress when the user takes control.
+      window.scrollTo({ top: window.scrollY, behavior: "instant" });
+    };
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY < previousY - 1) {
+        pauseFollowing();
+      } else if (
+        document.documentElement.scrollHeight - window.innerHeight - currentY <= 48
+      ) {
+        followPageRef.current = true;
+      }
+      previousY = currentY;
+    };
+    const onWheel = (event: WheelEvent) => {
+      if (event.deltaY < 0) pauseFollowing();
+    };
+    const onTouchStart = (event: TouchEvent) => {
+      touchY = event.touches[0]?.clientY ?? null;
+    };
+    const onTouchMove = (event: TouchEvent) => {
+      const currentY = event.touches[0]?.clientY;
+      if (currentY !== undefined && touchY !== null && currentY > touchY) {
+        pauseFollowing();
+      }
+      touchY = currentY ?? null;
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target;
+      if (target instanceof HTMLElement &&
+        (target.isContentEditable || target.closest("input, textarea, select"))) return;
+      if (["ArrowUp", "PageUp", "Home"].includes(event.key) ||
+        (event.key === " " && event.shiftKey)) pauseFollowing();
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (turns.length === 0 || !followPageRef.current) return;
 
     // Follow the page bottom so the call controls remain visible.
     const frame = window.requestAnimationFrame(() => {
       const marker = latestMessageRef.current;
-      if (!marker || marker.getClientRects().length === 0) return;
+      if (!followPageRef.current || !marker || marker.getClientRects().length === 0) return;
 
       window.scrollTo({
         top: document.documentElement.scrollHeight,
