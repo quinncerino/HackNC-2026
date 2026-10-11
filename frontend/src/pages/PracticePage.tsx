@@ -76,7 +76,7 @@ export default function PracticePage({ scenario, onCancel, onComplete }: Practic
       setIsFinishing(true);
       setPageError(null);
       await call.stop();
-      const result = await createDebrief(scenario.id, call.transcript, call.sessionId ?? trainingSessionId ?? undefined);
+      const result = await createDebrief(scenario.id, call.getLatestTranscript());
       onComplete(result);
     } catch (reason) {
       setPageError(reason instanceof Error ? reason.message : "Could not create the debrief");

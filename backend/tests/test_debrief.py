@@ -17,19 +17,19 @@ class DebriefTests(unittest.TestCase):
         self.assertEqual(result["mainTakeaway"], "We couldn’t assess this attempt. Try again in a quiet space or use text mode.")
         self.assertFalse(result["transcriptUsable"])
         self.assertFalse(result["keyMoments"])
-        self.assertTrue(all(skill["status"] == "Not enough evidence" for skill in result["skills"]))
+        self.assertEqual(result["skills"], [])
 
 
     def test_no_relevant_evidence_makes_no_personalized_success_claim(self):
         result = build_debrief(GIFT_CARD, [
-            {"role": "agent", "text": "Buy gift cards right away."},
+            {"role": "agent", "text": "Good morning, how are you doing today?"},
             {"role": "user", "text": "I'll think about it."},
         ])
 
         self.assertTrue(result["transcriptUsable"])
         self.assertIn("not provide enough relevant evidence", result["mainTakeaway"])
         self.assertFalse(result["keyMoments"])
-        self.assertTrue(all(skill["status"] == "Not enough evidence" for skill in result["skills"]))
+        self.assertEqual(result["skills"], [])
         self.assertNotIn("did well", result["mainTakeaway"])
 
 
@@ -44,7 +44,7 @@ class DebriefTests(unittest.TestCase):
         self.assertEqual(moment["youSaid"], "I can't afford that.")
         self.assertEqual(moment["assessment"], "left_opening")
         self.assertEqual(result["nextPracticeGoal"], "Refuse the payment directly instead of explaining why you can’t afford it.")
-        self.assertTrue(all(skill["status"] == "Not demonstrated" for skill in result["skills"]))
+        self.assertEqual(result["skills"], [])
 
 
     def test_demonstrated_skills_are_tied_to_captured_actions(self):
@@ -53,8 +53,8 @@ class DebriefTests(unittest.TestCase):
             {"role": "user", "text": "No, I won't buy gift cards. I'll verify this with someone I trust and I'll hang up."},
         ])
 
-        self.assertEqual([skill["status"] for skill in result["skills"]], [
-            "Demonstrated", "Demonstrated", "Demonstrated"
+        self.assertEqual([skill["name"] for skill in result["skills"][:3]], [
+            "Set a clear boundary", "Verify independently", "End the conversation"
         ])
         self.assertEqual(result["keyMoments"][0]["assessment"], "helped")
         self.assertEqual(len(result["scenarioWarningSigns"]), 4)

@@ -339,26 +339,38 @@ def build_debrief(scenario: dict, transcript: list[dict], session_code: str | No
     usable = bool(user_turns and caller_turns)
 
     refusal_pattern = (
-        r"(?:\bno(?: thanks| thank you)?[.!]?$|"
+        r"(?:\bno(?: thanks| thank you)?(?:[,.!]|$)|"
         r"\b(?:won['’]t|will not|not going to|refuse to) "
-        r"(?:share|give|send|pay|buy|purchase|click|provide|tell)\b|"
+        r"(?:share|give|send|pay|buy|purchase|click|provide|tell|do that|go along)\b|"
         r"\b(?:not sharing|not giving|not sending|not paying|not buying|"
-        r"stop asking|this (?:is|sounds like) a scam)\b)"
+        r"not comfortable|not okay with|don't feel comfortable|do not feel comfortable|"
+        r"not something i (?:do|will do)|that's not happening|"
+        r"stop asking|this (?:is|sounds like) a scam)\b|"
+        r"\bi (?:don't|do not) (?:want to|agree to) (?:buy|pay|send|share|give)\b)"
     )
     refusal_opening_pattern = (
         r"\b(?:can['’]t afford|cannot afford|wish i could|maybe later|"
         r"i don['’]t have (?:the )?(?:money|cash)|i(?:['’]m| am) not sure)\b"
     )
     verification_pattern = (
-        r"\b(?:call (?:them|back)|official number|official website|"
+        r"\b(?:call (?:them|back|(?:my|the) (?:bank|company|organization|office|school|delivery company))|"
+        r"(?:call|contact|check|verify) (?:it|this|the request) (?:with|through|using) "
+        r"(?:my|the|an) (?:bank|company|organization|official website|official number)|"
+        r"official number|official website|"
         r"number on (?:my|the) card|contact (?:my|the) bank|"
         r"verify independently|check independently|verify (?:this|it) myself|"
         r"verify (?:this|it) with someone i trust|"
-        r"using (?:the )?(?:official|number i already trust)|in person)\b"
+        r"using (?:the )?(?:official|number i already trust)|in person|"
+        r"(?:talk|speak|check|ask|call|contact|confirm|verify) (?:with|directly|through) "
+        r"(?:my|someone i trust|the official|the company|the bank|my family)|"
+        r"(?:check|verify|confirm) (?:with|through) my (?:bank|company|organization|office)|"
+        r"ask (?:my|someone i trust)|look (?:it|them) up myself|"
+        r"check (?:the|their) (?:website|number|request))\b"
     )
     exit_pattern = (
-        r"\b(?:(?:i['’]m|i am) (?:going to hang up|ending (?:this|the) call)|"
-        r"i(?:['’]ll| will) hang up|end(?:ing)? this conversation)\b"
+        r"\b(?:(?:i['’]m|i am) (?:going to hang up|hanging up|ending (?:this|the) call)|"
+        r"i(?:['’]ll| will) (?:hang up|end (?:this|the) (?:call|conversation))|"
+        r"(?:i need to go|i am done here|i['’]m done here)|end(?:ing)? this conversation)\b"
     )
     code_pattern = r"\b\d{6}\b"
     payment_pattern = (
@@ -366,9 +378,47 @@ def build_debrief(scenario: dict, transcript: list[dict], session_code: str | No
         r"purchase (?:the )?gift cards)|i (?:paid|sent (?:the )?money|bought (?:the )?gift cards)|"
         r"(?:i['’]m|i am) (?:paying|sending (?:the )?money))\b"
     )
+    caller_gift_card_pressure = (
+        r"\b(?:gift cards?|gift certificates?|buy|purchase|pick up|send|pay|"
+        r"payment|money|read (?:me )?(?:the )?codes?|share (?:the )?codes?|"
+        r"codes? from (?:the )?cards?)\b"
+    )
+    code_privacy_pattern = (
+        r"\b(?:won['’]t|will not|not going to|refuse to|don't|do not|never|"
+        r"not sharing|not giving|keep|won't tell|will not tell|won't give|will not give)\b"
+        r".{0,60}\b(?:code|codes|password|pin|"
+        r"passcode|account details|personal information)\b"
+    )
+    trusted_support_pattern = (
+        r"\b(?:ask|check|talk|speak|call|contact|show|tell|run this by|"
+        r"get advice from|speak to|talk to)\b.{0,60}\b"
+        r"(?:someone i trust|my (?:daughter|son|wife|husband|partner|friend|"
+        r"family|relative|colleague|manager|teacher|bank|office)|"
+        r"a trusted (?:person|friend|family member|colleague))\b"
+    )
+    pause_pattern = (
+        r"\b(?:let me think|i need (?:some )?time|i need to think|"
+        r"i want to think|i(?:['’]ll| will) think about it|think (?:it )?over|"
+        r"i (?:won['’]t|will not) rush|not right now|give me a moment|"
+        r"i need a moment|i(?:['’]ll| will) decide after)\b"
+    )
+    challenge_pattern = (
+        r"\b(?:this (?:is|sounds like|seems) (?:a )?scam|sounds suspicious|"
+        r"seems suspicious|that doesn't sound right|that does not sound right|"
+        r"prove (?:who you are|that)|how do i know|who (?:are you|is this))\b"
+    )
 
     moments = []
-    flags = {"boundary": False, "verification": False, "exit": False}
+    flags = {
+        "boundary": False,
+        "verification": False,
+        "exit": False,
+        "code_privacy": False,
+        "trusted_support": False,
+        "pause": False,
+        "challenge": False,
+    }
+    skill_evidence = {key: "" for key in flags}
     has_relevant_evidence = False
     for index, turn in enumerate(turns):
         if turn["role"] != "user":
@@ -379,14 +429,38 @@ def build_debrief(scenario: dict, transcript: list[dict], session_code: str | No
         verified = _matches(text, verification_pattern) and not _matches(
             text,
             r"\b(?:won['’]t|will not|can['’]t|cannot|don['’]t|do not|not going to) "
-            r"(?:verify|check|call back|contact)\b",
+            r"(?:verify|check|call back|contact|call)\b",
         )
         exited = _matches(text, exit_pattern)
+        protected_code = _matches(text, code_privacy_pattern)
+        sought_support = _matches(text, trusted_support_pattern)
+        paused = _matches(text, pause_pattern)
+        challenged = _matches(text, challenge_pattern)
         shared_code = bool(re.search(code_pattern, text)) and not _matches(
             text, r"\b(?:won['’]t|will not|don['’]t|do not|not sharing|not giving|not my code)\b"
         )
         agreed_to_pay = _matches(text, payment_pattern) and not _matches(text, r"\b(?:if|unless)\b")
-        relevant = refused or opening or verified or exited or shared_code or agreed_to_pay
+        previous_caller = next(
+            (turns[prior]["text"] for prior in range(index - 1, -1, -1) if turns[prior]["role"] == "agent"),
+            None,
+        )
+        contextual_pause = paused and previous_caller is not None and _matches(
+            previous_caller,
+            r"\b(?:urgent|right now|immediately|deadline|act now|send|pay|buy|"
+            r"purchase|gift cards?|money|transfer|code|password|account|click|share|give|provide)\b",
+        )
+        gift_card_context = (
+            scenario.get("id") == "gift_card"
+            and previous_caller is not None
+            and _matches(previous_caller, caller_gift_card_pressure)
+        )
+        ambiguous_gift_card_reply = gift_card_context and not any(
+            (refused, opening, verified, exited, shared_code, agreed_to_pay, protected_code, sought_support, challenged)
+        )
+        relevant = (
+            refused or opening or verified or exited or shared_code or agreed_to_pay
+            or protected_code or sought_support or contextual_pause or challenged or ambiguous_gift_card_reply
+        )
         if not relevant:
             continue
 
@@ -394,17 +468,31 @@ def build_debrief(scenario: dict, transcript: list[dict], session_code: str | No
         flags["boundary"] |= refused
         flags["verification"] |= verified
         flags["exit"] |= exited
-        previous_caller = next(
-            (turns[prior]["text"] for prior in range(index - 1, -1, -1) if turns[prior]["role"] == "agent"),
-            None,
-        )
+        flags["code_privacy"] |= protected_code
+        flags["trusted_support"] |= sought_support
+        flags["pause"] |= contextual_pause
+        for key, detected in (
+            ("boundary", refused),
+            ("verification", verified),
+            ("exit", exited),
+            ("code_privacy", protected_code),
+            ("trusted_support", sought_support),
+            ("pause", contextual_pause),
+            ("challenge", challenged),
+        ):
+            if detected and not skill_evidence[key]:
+                skill_evidence[key] = text
+        flags["challenge"] |= challenged
         if not previous_caller:
             continue
 
-        left_opening = opening or shared_code or agreed_to_pay
+        left_opening = opening or shared_code or agreed_to_pay or ambiguous_gift_card_reply
         if left_opening:
             if opening:
                 why = "Explaining that you cannot afford it can leave the request open to another payment suggestion; a direct refusal closes that opening."
+                stronger = "I won’t buy gift cards or share their codes. I’ll verify this request with someone I trust."
+            elif ambiguous_gift_card_reply:
+                why = "The caller asked for gift cards, but this reply does not show a clear refusal or verification plan. That is not proof you agreed; practice stating the boundary and how you will verify."
                 stronger = "I won’t buy gift cards or share their codes. I’ll verify this request with someone I trust."
             elif shared_code:
                 why = "A six-digit number may be a verification code; sharing one can let someone approve an account action. Keep codes private."
@@ -424,8 +512,16 @@ def build_debrief(scenario: dict, transcript: list[dict], session_code: str | No
                 reasons.append("Choosing an independent channel keeps the caller from controlling how you verify.")
             if exited:
                 reasons.append("Ending the conversation gives you space to check the claim without pressure.")
+            if protected_code:
+                reasons.append("You kept sensitive codes or account details private.")
+            if sought_support:
+                reasons.append("You involved someone you trust before acting.")
+            if contextual_pause:
+                reasons.append("Pausing gives you time to think instead of responding under pressure.")
+            if challenged:
+                reasons.append("You questioned the caller’s identity or claim instead of accepting it at face value.")
             why = " ".join(reasons) or "This exchange did not show a clear protective action in the captured response."
-            category = "helped" if refused or verified or exited else "left_opening"
+            category = "helped" if any((refused, verified, exited, protected_code, sought_support, contextual_pause, challenged)) else "left_opening"
 
         moments.append({
             "callerSaid": previous_caller,
@@ -437,49 +533,60 @@ def build_debrief(scenario: dict, transcript: list[dict], session_code: str | No
 
     # A usable conversation with no recognized behavior is not proof that a
     # skill was missed; the phrasing may simply be outside these rules.
-    if not usable or not has_relevant_evidence:
-        skills = [
-            {"name": name, "status": "Not enough evidence", "detail": "No relevant exchange was captured to assess this skill."}
-            for name in ("Set a clear boundary", "Verify independently", "End the conversation")
-        ]
-    else:
-        skill_specs = (
-            ("Set a clear boundary", "boundary", "A direct refusal was captured.", "A direct refusal was not captured in the relevant replies."),
-            ("Verify independently", "verification", "You named an independent way to check the request.", "An independent verification plan was not captured in the relevant replies."),
-            ("End the conversation", "exit", "You said you would end the conversation.", "A plan to end the conversation was not captured in the relevant replies."),
-        )
-        skills = [
-            {"name": name, "status": "Demonstrated" if flags[key] else "Not demonstrated", "detail": demonstrated if flags[key] else not_demonstrated}
-            for name, key, demonstrated, not_demonstrated in skill_specs
-        ]
+    skill_specs = (
+        ("boundary", "Set a clear boundary", "You directly refused the requested action."),
+        ("verification", "Verify independently", "You named a way to verify the request outside the caller’s control."),
+        ("exit", "End the conversation", "You said you would end the call or conversation."),
+        ("code_privacy", "Protect sensitive information", "You kept a verification code, password, PIN, or personal details private."),
+        ("trusted_support", "Get a second opinion", "You involved someone you trust before acting."),
+        ("pause", "Pause before acting", "You took time to think instead of responding under pressure."),
+        ("challenge", "Question the caller’s claim", "You questioned the caller’s identity or story."),
+    )
+    skills = [
+        {"name": name, "detail": detail, "evidence": skill_evidence[key]}
+        for key, name, detail in skill_specs if flags[key]
+    ]
 
     if not usable:
         takeaway = "We couldn’t assess this attempt. Try again in a quiet space or use text mode."
     elif not has_relevant_evidence:
         takeaway = "The captured conversation did not provide enough relevant evidence to assess this attempt."
     elif any(moment["assessment"] == "left_opening" for moment in moments):
-        takeaway = "At least one captured response left the request open; use a direct refusal and verify independently before acting."
+        takeaway = (
+            "One reply did not clearly stop the caller’s request. This does not mean you agreed; "
+            "the transcript just doesn’t show a clear refusal and independent check. "
+            "Next time, say no directly and verify through someone or a contact method you trust."
+        )
     else:
-        demonstrated = []
-        if flags["boundary"]:
-            demonstrated.append("set a direct boundary")
-        if flags["verification"]:
-            demonstrated.append("named an independent way to verify")
-        if flags["exit"]:
-            demonstrated.append("said you would end the conversation")
-        takeaway = "The captured responses show you " + " and ".join(demonstrated) + "."
+        demonstrated = [skill["name"].lower() for skill in skills]
+        takeaway = "The captured conversation shows these helpful actions: " + ", ".join(demonstrated) + "."
 
-    missing_skill = next((skill for skill in skills if skill["status"] != "Demonstrated"), None)
-    if not usable or not has_relevant_evidence:
-        next_goal = "Try again and practice one clear boundary followed by independent verification."
-    elif any(moment["assessment"] == "left_opening" for moment in moments) and scenario.get("id") == "gift_card":
+    demonstrated_keys = {key for key, _, _ in skill_specs if flags[key]}
+    if (
+        scenario.get("id") == "gift_card"
+        and any(_matches(text, refusal_opening_pattern) for text in user_turns)
+    ):
         next_goal = "Refuse the payment directly instead of explaining why you can’t afford it."
-    elif missing_skill and missing_skill["name"] == "Set a clear boundary":
+    elif "boundary" not in demonstrated_keys:
         next_goal = "Refuse the requested action directly instead of explaining or negotiating."
-    elif missing_skill and missing_skill["name"] == "Verify independently":
+    elif "verification" not in demonstrated_keys:
         next_goal = "Name how you’ll verify using contact information you choose."
-    else:
+    elif "exit" not in demonstrated_keys:
         next_goal = "End the conversation before taking action, then verify through a trusted channel."
+    else:
+        next_goal = "Keep using a clear boundary and independent verification if the caller pushes back."
+
+    improvements = []
+    if "boundary" not in demonstrated_keys:
+        improvements.append(next_goal if scenario.get("id") == "gift_card" and any(
+            _matches(text, refusal_opening_pattern) for text in user_turns
+        ) else "Clearly refuse the requested action instead of explaining, hesitating, or negotiating.")
+    if "verification" not in demonstrated_keys:
+        improvements.append("Say how you will verify using contact information or a person you already trust.")
+    if "exit" not in demonstrated_keys:
+        improvements.append("End the conversation before taking any requested action.")
+    if not improvements:
+        improvements.append("Keep applying these skills if the caller changes their story or increases the pressure.")
 
     warning_signs = []
     for index, label in enumerate(scenario.get("tactics", [])):
@@ -491,6 +598,7 @@ def build_debrief(scenario: dict, transcript: list[dict], session_code: str | No
         "mainTakeaway": takeaway,
         "keyMoments": moments[:3],
         "skills": skills,
+        "improvements": improvements,
         "nextPracticeGoal": next_goal,
         "scenarioWarningSigns": warning_signs,
     })

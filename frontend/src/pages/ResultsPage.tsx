@@ -12,7 +12,7 @@ type ResultsPageProps = {
 
 export default function ResultsPage({ scenario, debrief, onPracticeAgain, onRestart }: ResultsPageProps) {
   useLayoutEffect(() => {
-    // Cancel the call's smooth scrolling and show the review from the top.
+    // Show the review from the top when either practice mode completes.
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [debrief]);
 
@@ -21,7 +21,7 @@ export default function ResultsPage({ scenario, debrief, onPracticeAgain, onRest
       <header className="page-header">
         <div>
           <p className="eyebrow">Practice complete</p>
-          <h1>Your call, explained.</h1>
+          <h1>Your practice, explained.</h1>
           <p>{scenario.title} · Review what happened and practice a safer response.</p>
         </div>
       </header>

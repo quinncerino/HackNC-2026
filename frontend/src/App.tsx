@@ -57,10 +57,6 @@ export default function App() {
       <ResultsPage
         scenario={scenario}
         debrief={debrief}
-        onPracticeAgain={() => {
-          setDebrief(null);
-          setScreen("practice");
-        }}
         onRestart={() => setScreen("home")}
       />
     );

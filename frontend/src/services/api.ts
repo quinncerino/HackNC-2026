@@ -67,3 +67,9 @@ export function startIMessageSession(
 export function getIMessageSession(sessionId: string): Promise<IMessageSession> {
   return apiRequest<IMessageSession>(`/api/imessage/session/${sessionId}`);
 }
+
+export function cancelIMessageSession(sessionId: string): Promise<{ status: string }> {
+  return apiRequest<{ status: string }>(`/api/imessage/session/${sessionId}/cancel`, {
+    method: "POST",
+  });
+}
