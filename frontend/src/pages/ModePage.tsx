@@ -7,7 +7,7 @@ export default function ModePage({ onChoose, onHowItWorks }: ModePageProps) {
   return (
     <main className="page-shell">
       <header className="hero">
-        <h1>Nice Try. <span>Your move.</span></h1>
+        <h1 style={{ textAlign: "center" }}>Nice Try.</h1>
         <p>How would you like to practice spotting a scam?</p>
       </header>
       <div className="training-modes">
