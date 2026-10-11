@@ -1,14 +1,20 @@
+import { useLayoutEffect } from "react";
+
 import DebriefPanel from "../components/DebriefPanel";
 import type { Debrief, Scenario } from "../types";
 
 type ResultsPageProps = {
   scenario: Scenario;
   debrief: Debrief;
-  onPracticeAgain: () => void;
   onRestart: () => void;
 };
 
-export default function ResultsPage({ scenario, debrief, onPracticeAgain, onRestart }: ResultsPageProps) {
+export default function ResultsPage({ scenario, debrief, onRestart }: ResultsPageProps) {
+  useLayoutEffect(() => {
+    // Cancel the call's smooth scrolling and show the review from the top.
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [debrief]);
+
   return (
     <main className="page-shell">
       <header className="page-header">
@@ -19,14 +25,7 @@ export default function ResultsPage({ scenario, debrief, onPracticeAgain, onRest
         </div>
       </header>
       <DebriefPanel debrief={debrief} />
-      <div className="results-actions">
-        <button type="button" className="results-primary-action" onClick={onPracticeAgain}>
-          Practice that moment again <span aria-hidden="true">→</span>
-        </button>
-        <button type="button" className="results-secondary-action" onClick={onRestart}>
-          ← Back to scenarios
-        </button>
-      </div>
+      <div className="start-row"><button type="button" onClick={onRestart}>← Back to scenarios</button></div>
     </main>
   );
 }

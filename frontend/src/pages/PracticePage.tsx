@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import CallControls from "../components/CallControls";
 import CallStatus from "../components/CallStatus";
@@ -18,9 +18,28 @@ export default function PracticePage({ scenario, onCancel, onComplete }: Practic
   const [isFinishing, setIsFinishing] = useState(false);
   const [pageError, setPageError] = useState<string | null>(null);
 
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    if (call.status !== "connected" || isFinishing) return;
+    const startedAt = performance.now();
+    setElapsedSeconds(0);
+    const updateDuration = () => {
+      setElapsedSeconds(Math.floor((performance.now() - startedAt) / 1000));
+    };
+    const timer = window.setInterval(updateDuration, 250);
+    return () => {
+      window.clearInterval(timer);
+      updateDuration();
+    };
+  }, [call.status, isFinishing]);
+
+  const duration = `${Math.floor(elapsedSeconds / 60).toString().padStart(2, "0")}:${(elapsedSeconds % 60).toString().padStart(2, "0")}`;
+
   async function startCall() {
     try {
       setPageError(null);
+      setElapsedSeconds(0);
       await call.start(scenario.id);
     } catch (reason) {
       setPageError(reason instanceof Error ? reason.message : "Could not start the call");
@@ -54,6 +73,14 @@ export default function PracticePage({ scenario, onCancel, onComplete }: Practic
 
   return (
     <main className="page-shell practice-layout">
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "12px" }}>
+        <span
+          aria-label={`Call duration: ${Math.floor(elapsedSeconds / 60)} minutes and ${elapsedSeconds % 60} seconds`}
+          style={{ fontSize: "16px", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}
+        >
+          Call duration: {duration}
+        </span>
+      </div>
       <header className="page-header">
         <button type="button" className="text-action" onClick={onCancel} disabled={call.status !== "disconnected"}>
           ← Scenarios
