@@ -560,6 +560,165 @@ button:focus-visible,summary:focus-visible {
   border-radius:4px;
 }
 
+.feedback-card--takeaway {
+  border-left:8px solid var(--blue);
+  background:linear-gradient(120deg,#e7f1ff,#f8fbff);
+}
+
+.feedback-card--takeaway h2,.feedback-card--goal h2 {
+  font-size:clamp(23px,3vw,34px);
+  line-height:1.45;
+}
+
+.debrief-moments {
+  display:grid;
+  gap:16px;
+}
+
+.debrief-moment {
+  padding:20px;
+  border:1px solid #94aace;
+  border-radius:5px;
+  background:#fff9;
+}
+
+.debrief-moment h3 {
+  margin:0 0 14px;
+}
+
+.debrief-exchange {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.debrief-exchange>div {
+  padding:14px;
+  background:#fff;
+  border-left:4px solid #6f9fe2;
+}
+
+.debrief-exchange>div+div {
+  border-left-color:#42a879;
+}
+
+.debrief-exchange p,.debrief-assessment span,.debrief-stronger-response span {
+  display:block;
+  line-height:1.6;
+  margin:8px 0 0;
+  overflow-wrap:anywhere;
+}
+
+.debrief-assessment,.debrief-stronger-response {
+  margin:16px 0 0;
+  line-height:1.6;
+}
+
+.debrief-assessment--left_opening {
+  color:#8a3d13;
+}
+
+.debrief-stronger-response {
+  padding:14px;
+  background:#edf8f0;
+  border-radius:4px;
+}
+
+.debrief-skill-results {
+  list-style:none;
+  padding:0!important;
+  display:grid;
+  gap:12px;
+}
+
+.debrief-skill-result {
+  padding:14px 16px;
+  background:#fff9;
+  border:1px solid #b4c4dc;
+  border-radius:4px;
+}
+
+.debrief-skill-result>div {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+
+.debrief-skill-result>div span {
+  padding:5px 9px;
+  border-radius:20px;
+  background:#e9edf4;
+  font-size:14px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.debrief-skill-result--demonstrated>div span {
+  color:#125d37;
+  background:#d8f4e1;
+}
+
+.debrief-skill-result--not-demonstrated>div span {
+  color:#823411;
+  background:#ffeadb;
+}
+
+.debrief-skill-result p {
+  line-height:1.5;
+  margin:8px 0 0;
+}
+
+.debrief-small {
+  color:#415783;
+  font-size:15px;
+  line-height:1.5;
+}
+
+.feedback-card--goal {
+  background:linear-gradient(#f0fff4,#d9f9e3);
+}
+
+.scenario-guidance summary {
+  font-size:23px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.scenario-guidance>p,.scenario-guidance li {
+  line-height:1.6;
+}
+
+.results-actions {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  margin:30px 0 12px;
+}
+
+.results-actions button {
+  width:min(100%,680px);
+}
+
+.results-primary-action {
+  color:#fff;
+  background:linear-gradient(#1767e9,#064ac0);
+  box-shadow:inset 3px 3px #80b3ff,inset -3px -3px #083b91;
+}
+
+.results-primary-action span {
+  margin-left:12px;
+}
+
+.results-secondary-action {
+  border:0;
+  background:transparent;
+  box-shadow:none;
+  font-size:17px;
+  padding:10px;
+}
+
 @media(max-width:900px) {
   body {
     padding:8px;
@@ -675,6 +834,15 @@ button:focus-visible,summary:focus-visible {
 
   .feedback-card--wide {
     grid-column:auto;
+  }
+
+  .debrief-exchange {
+    grid-template-columns:1fr;
+  }
+
+  .debrief-skill-result>div {
+    align-items:flex-start;
+    flex-direction:column;
   }
 
   .help-menu>div {
