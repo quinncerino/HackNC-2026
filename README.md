@@ -216,3 +216,6 @@ The Flask health and scenario endpoints can run locally without ElevenLabs crede
 ## Built for HackNC 2026
 
 Nice Try turns scam awareness into a skill you can rehearse: **pause, question the pressure, verify independently, and choose a safer next step.**
+
+## AI Use
+We used AI for structuring, assistance with integration of tools, optimizing, and debugging.
